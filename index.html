@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>DrinkStock — Manajemen Usaha Minuman</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">DS</div>
+        <div>
+          <strong id="brandNameSide">DrinkStock</strong>
+          <small>Business Manager</small>
+        </div>
+      </div>
+
+      <nav class="nav" id="sidebarNav">
+        <div class="nav-row"><button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="products"><span class="nav-icon">▦</span><span>Atur Stok</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="sales"><span class="nav-icon">↗</span><span>Jualan</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="orders"><span class="nav-icon">▤</span><span>Pesanan</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="transactions"><span class="nav-icon">⇄</span><span>Barang Masuk/Keluar</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="reports"><span class="nav-icon">⌁</span><span>Laporan</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="capital"><span class="nav-icon">Rp</span><span>Modal Usaha</span></button></div>
+        <div class="nav-row"><button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span><span>Pengaturan</span></button></div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini-card">
+          <div class="dot"></div>
+          <div>
+            <strong>Data tersimpan otomatis</strong>
+            <small>Browser LocalStorage</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="Buka menu">☰</button>
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Ringkasan usaha hari ini.</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="today-chip" id="todayChip"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- DASHBOARD -->
+        <section class="page active" id="page-dashboard">
+          <div class="hero-card">
+            <div>
+              <span class="eyebrow">RINGKASAN USAHA</span>
+              <h2 id="heroBrand">Kelola stok dan keuntungan tanpa ribet.</h2>
+              <p>Semua transaksi otomatis mengubah stok, omzet, modal, laba, dan grafik.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="secondary-btn" id="heroInBtn">+ Stok Masuk</button>
+              <button class="primary-btn" id="heroOutBtn">+ Jualan</button>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon green">Rp</span><span>Pendapatan Bersih Hari Ini</span></div>
+              <strong id="statRevenueToday">Rp0</strong>
+              <small id="statSalesToday">0 unit terjual</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon blue">↗</span><span>Laba Hari Ini</span></div>
+              <strong id="statProfitToday">Rp0</strong>
+              <small id="statMarginToday">Margin 0%</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon violet">▦</span><span>Total Stok</span></div>
+              <strong id="statStock">0</strong>
+              <small id="statStockValue">Nilai modal Rp0</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon orange">!</span><span>Stok Menipis</span></div>
+              <strong id="statLowStock">0</strong>
+              <small>Perlu ditambah</small>
+            </article>
+            <article class="stat-card capital-status-card">
+              <div class="stat-head"><span class="stat-icon green">Rp</span><span>Status Balik Modal</span></div>
+              <strong id="statCapitalStatus">Belum dicatat</strong>
+              <small id="statCapitalRemaining">Catat modal usaha</small>
+              <button class="text-btn" data-go="capital">Lihat analisis</button>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel chart-panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Omzet & Laba 7 Hari</h3>
+                  <p>Pergerakan penjualan harian.</p>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Stok Menipis</h3>
+                  <p>Produk yang perlu segera di-restock.</p>
+                </div>
+                <button class="text-btn" data-go="products">Lihat semua</button>
+              </div>
+              <div id="lowStockList" class="list-stack"></div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid lower">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Produk Terlaris</h3>
+                  <p>Berdasarkan unit keluar.</p>
+                </div>
+              </div>
+              <div id="topProductList" class="list-stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Aktivitas Terbaru</h3>
+                  <p>Transaksi terakhir yang tercatat.</p>
+                </div>
+                <button class="text-btn" data-go="transactions">Riwayat</button>
+              </div>
+              <div id="recentTransactions" class="list-stack"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- STOCK MANAGEMENT -->
+        <section class="page" id="page-products">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <span>⌕</span>
+                <input id="productSearch" type="search" placeholder="Cari produk..." />
+              </div>
+              <select id="categoryFilter">
+                <option value="">Semua kategori</option>
+              </select>
+            </div>
+            <div class="stock-toolbar-actions">
+              <button class="secondary-btn" id="stockInProductsBtn">+ Stok Masuk</button>
+              <button class="primary-btn" id="addProductBtn">+ Tambah Produk</button>
+            </div>
+          </div>
+
+          <div class="summary-strip">
+            <div><span>Total Produk</span><strong id="productCount">0</strong></div>
+            <div><span>Total Unit</span><strong id="productUnits">0</strong></div>
+            <div><span>Nilai Modal Stok</span><strong id="inventoryCost">Rp0</strong></div>
+            <div><span>Potensi Omzet</span><strong id="inventoryRevenue">Rp0</strong></div>
+          </div>
+
+          <article class="panel table-panel">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produk</th>
+                    <th>Ukuran</th>
+                    <th>Stok</th>
+                    <th>Harga Modal</th>
+                    <th>Harga Jual</th>
+                    <th>Laba/Unit</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="productTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <!-- SALES -->
+        <section class="page" id="page-sales">
+          <div class="sales-heading">
+            <div>
+              <span class="eyebrow">KASIR</span>
+              <h2>Pilih produk untuk mulai jualan</h2>
+            </div>
+            <div class="search-box">
+              <span>⌕</span>
+              <input id="salesSearch" type="search" placeholder="Cari produk..." />
+            </div>
+            <button class="primary-btn cart-open-btn" id="openCartBtn">Keranjang <span id="cartCount">0</span></button>
+          </div>
+          <div id="salesProductGrid" class="sales-product-grid"></div>
+        </section>
+
+        <!-- ORDER MANAGEMENT -->
+        <section class="page" id="page-orders">
+          <div class="orders-heading">
+            <div>
+              <span class="eyebrow">PEMENUHAN PESANAN</span>
+              <h2>Keranjang & status pesanan</h2>
+            </div>
+            <button class="secondary-btn" id="ordersOpenCartBtn">Buka Keranjang <span id="ordersCartCount">0</span></button>
+          </div>
+          <div class="order-status-tabs" id="orderStatusTabs" role="tablist" aria-label="Filter status pesanan">
+            <button class="order-status-tab active" data-order-status="all">Semua <span id="orderCountAll">0</span></button>
+            <button class="order-status-tab" data-order-status="packing">Packing <span id="orderCountPacking">0</span></button>
+            <button class="order-status-tab" data-order-status="delivery">Dalam Pengantaran <span id="orderCountDelivery">0</span></button>
+            <button class="order-status-tab" data-order-status="refund">Refund <span id="orderCountRefund">0</span></button>
+            <button class="order-status-tab" data-order-status="done">Done <span id="orderCountDone">0</span></button>
+          </div>
+          <div id="orderList" class="order-list"></div>
+        </section>
+
+        <!-- TRANSACTIONS -->
+        <section class="page" id="page-transactions">
+          <div class="transaction-action-grid">
+            <button class="action-card incoming" id="stockInBtn">
+              <span class="big-icon">↙</span>
+              <span><strong>Tambah Stok Masuk</strong><small>Pembelian / restock produk</small></span>
+            </button>
+            <button class="action-card outgoing" id="stockOutBtn">
+              <span class="big-icon">↗</span>
+              <span><strong>Buka Halaman Jualan</strong><small>Pilih produk dan buat struk penjualan</small></span>
+            </button>
+          </div>
+
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <span>⌕</span>
+                <input id="transactionSearch" type="search" placeholder="Cari transaksi..." />
+              </div>
+              <select id="transactionTypeFilter">
+                <option value="">Semua transaksi</option>
+                <option value="in">Stok masuk</option>
+                <option value="out">Penjualan</option>
+              </select>
+            </div>
+          </div>
+
+          <article class="panel table-panel">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Produk</th>
+                    <th>Tipe</th>
+                    <th>Jumlah</th>
+                    <th>Modal</th>
+                    <th>Omzet</th>
+                    <th>Laba</th>
+                    <th>Catatan</th>
+                    <th>Struk</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="transactionTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <!-- REPORTS -->
+        <section class="page" id="page-reports">
+          <div class="report-filter">
+            <label>
+              Dari tanggal
+              <input type="date" id="reportStart" />
+            </label>
+            <label>
+              Sampai tanggal
+              <input type="date" id="reportEnd" />
+            </label>
+            <button class="secondary-btn" id="applyReportBtn">Terapkan</button>
+            <div class="report-export-actions">
+              <button class="secondary-btn" id="downloadReportWordBtn">Unduh Word</button>
+              <button class="primary-btn" id="downloadReportPdfBtn">Unduh PDF</button>
+            </div>
+          </div>
+
+          <div class="stat-grid report-stats">
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon green">Rp</span><span>Total Pendapatan Bersih</span></div>
+              <strong id="reportRevenue">Rp0</strong>
+              <small id="reportSoldUnits">0 unit keluar</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon blue">↗</span><span>Total Laba</span></div>
+              <strong id="reportProfit">Rp0</strong>
+              <small id="reportMargin">Margin 0%</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon violet">↓</span><span>Stok Masuk</span></div>
+              <strong id="reportIn">0</strong>
+              <small>Unit ditambahkan</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon orange">↑</span><span>Stok Keluar</span></div>
+              <strong id="reportOut">0</strong>
+              <small>Unit terjual</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon violet">Rp</span><span>Modal Terjual</span></div>
+              <strong id="reportCost">Rp0</strong>
+              <small>Total HPP produk</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon orange">−</span><span>Biaya Pengantaran</span></div>
+              <strong id="reportDelivery">Rp0</strong>
+              <small>Biaya operasional penjualan</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon blue">%</span><span>Total Diskon</span></div>
+              <strong id="reportDiscount">Rp0</strong>
+              <small>Potongan harga penjualan</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon violet">＋</span><span>Modal Masuk Periode</span></div>
+              <strong id="reportCapitalIn">Rp0</strong>
+              <small>Item modal pada rentang ini</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon orange">↻</span><span>Sisa Balik Modal</span></div>
+              <strong id="reportCapitalRemaining">Rp0</strong>
+              <small id="reportCapitalStatus">Belum ada modal dicatat</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel chart-panel">
+              <div class="panel-head">
+                <div><h3>Grafik Bulanan</h3><p>Omzet dan laba 6 bulan terakhir.</p></div>
+              </div>
+              <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h3>Ringkasan Produk</h3><p>Kontribusi setiap produk.</p></div>
+              </div>
+              <div id="reportProductList" class="list-stack"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- CAPITAL TRACKER -->
+        <section class="page" id="page-capital">
+          <div class="capital-heading">
+            <div>
+              <span class="eyebrow">MODAL USAHA</span>
+              <h2>Pantau modal per item setiap bulan</h2>
+              <p>Pilih kartu bulan, masukkan modal barang, lalu total dan dashboard akan ikut terhitung otomatis.</p>
+            </div>
+          </div>
+
+          <div class="stat-grid capital-stats">
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon violet">Rp</span><span>Total Modal Item</span></div>
+              <strong id="capitalTotal">Rp0</strong>
+              <small id="capitalEntriesCount">0 item modal</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon green">↗</span><span>Akumulasi Laba Bersih</span></div>
+              <strong id="capitalProfit">Rp0</strong>
+              <small>Sejak bulan modal pertama</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon orange">↻</span><span>Sisa Balik Modal</span></div>
+              <strong id="capitalRemaining">Rp0</strong>
+              <small id="capitalRecoveryStatus">Belum ada modal dicatat</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-head"><span class="stat-icon blue">%</span><span>Progress Kembali</span></div>
+              <strong id="capitalProgress">0%</strong>
+              <div class="capital-progress-track"><span id="capitalProgressBar"></span></div>
+            </article>
+          </div>
+
+          <div class="capital-layout">
+            <article class="panel capital-month-card-panel">
+              <div class="panel-head">
+                <div><h3>Kartu Modal Bulanan</h3><p>Klik bulan untuk melihat rincian modal yang masuk.</p></div>
+              </div>
+              <div id="capitalMonthCards" class="capital-month-cards"></div>
+            </article>
+            <article class="panel capital-status-panel">
+              <div class="panel-head">
+                <div><h3>Analisis Balik Modal</h3><p>Perbandingan laba bersih kumulatif dengan total modal item.</p></div>
+              </div>
+              <div id="capitalAnalysis"></div>
+            </article>
+          </div>
+
+          <article class="panel capital-detail-panel">
+            <div class="panel-head">
+              <div>
+                <h3 id="capitalDetailTitle">Detail Modal Bulan Ini</h3>
+                <p id="capitalDetailSubtitle">Pilih bulan untuk melihat rincian item modal.</p>
+              </div>
+              <button class="primary-btn" id="openCapitalItemBtn" type="button">+ Masukkan Modal</button>
+            </div>
+            <div class="table-scroll">
+              <table class="capital-item-table">
+                <thead>
+                  <tr>
+                    <th>Nama Barang</th>
+                    <th>Harga</th>
+                    <th>Jumlah</th>
+                    <th>Total Modal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="capitalItemTableBody"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3">Total Modal Bulan Ini</td>
+                    <td id="capitalSelectedMonthTotal">Rp0</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel capital-monthly-panel">
+            <div class="panel-head">
+              <div><h3>Rekap Modal & Laba Per Bulan</h3><p>Item modal dan penjualan tersambung otomatis dari catatan aplikasi.</p></div>
+            </div>
+            <div class="table-scroll">
+              <table class="capital-table">
+                <thead><tr><th>Bulan</th><th>Modal Masuk</th><th>Laba Bersih Bulan Ini</th><th>Modal Kumulatif</th><th>Laba Kumulatif</th><th>Sisa Balik Modal</th><th>Status</th></tr></thead>
+                <tbody id="capitalMonthlyBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel capital-history-panel">
+            <div class="panel-head">
+              <div><h3>Riwayat Item Modal</h3><p>Semua modal barang yang pernah dicatat.</p></div>
+            </div>
+            <div id="capitalEntryList" class="capital-entry-list"></div>
+          </article>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="page" id="page-settings">
+          <div class="settings-grid">
+            <article class="panel settings-card">
+              <div class="panel-head">
+                <div><h3>Informasi Usaha</h3><p>Sesuaikan nama aplikasi dengan usaha Anda.</p></div>
+              </div>
+              <label class="field">
+                <span>Nama usaha</span>
+                <input id="settingBrandName" type="text" placeholder="Contoh: MoodBite" />
+              </label>
+              <label class="field">
+                <span>Alamat usaha</span>
+                <input id="settingBusinessAddress" type="text" placeholder="Alamat toko atau usaha" />
+              </label>
+              <label class="field">
+                <span>Nomor telepon / WhatsApp</span>
+                <input id="settingBusinessPhone" type="tel" placeholder="08xxxxxxxxxx" />
+              </label>
+              <label class="field">
+                <span>Teks header laporan PDF</span>
+                <input id="settingReportHeader" type="text" placeholder="Contoh: Laporan penjualan dan persediaan" />
+              </label>
+              <label class="field">
+                <span>Teks footer laporan PDF</span>
+                <input id="settingReportFooter" type="text" placeholder="Contoh: Terima kasih telah mempercayai kami" />
+              </label>
+              <label class="field">
+                <span>Batas stok menipis</span>
+                <input id="settingLowStock" type="number" min="0" />
+              </label>
+              <button class="primary-btn" id="saveSettingsBtn">Simpan Pengaturan</button>
+            </article>
+
+            <article class="panel settings-card danger-zone">
+              <div class="panel-head">
+                <div><h3>Data</h3><p>Cadangkan atau bersihkan data aplikasi.</p></div>
+              </div>
+              <button class="secondary-btn" id="exportJsonBtn">Cadangkan Data (.json)</button>
+              <label class="secondary-btn file-label">
+                Impor Data
+                <input type="file" id="importJsonInput" accept="application/json" hidden />
+              </label>
+              <button class="danger-btn" id="resetDataBtn">Reset Semua Data</button>
+            </article>
+          </div>
+
+          <div class="info-banner">
+            <strong>Catatan:</strong>
+            versi ini berjalan tanpa database/server. Data tersimpan di browser perangkat Anda.
+            Untuk dipakai banyak perangkat/karyawan, tahap berikutnya adalah menghubungkan aplikasi ke backend/database.
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="cartModal">
+    <section class="modal cart-modal">
+      <div class="modal-head">
+        <div><h3>Keranjang Pesanan</h3><p id="cartSummary">Belum ada produk dipilih.</p></div>
+        <button class="icon-btn modal-close" data-close="cartModal" aria-label="Tutup keranjang">×</button>
+      </div>
+      <div id="cartItems" class="cart-items"></div>
+      <div class="form-grid cart-checkout-fields">
+        <label class="field"><span>Nama pelanggan</span><input id="cartCustomer" placeholder="Nama penerima" /></label>
+        <label class="field"><span>Pengantaran ke</span><input id="cartAddress" placeholder="Alamat / area pengantaran" /></label>
+        <label class="field"><span>Biaya pengantaran</span><input id="cartDeliveryCost" type="number" min="0" value="0" /></label>
+        <label class="field"><span>Diskon pesanan</span><input id="cartDiscount" type="number" min="0" value="0" /></label>
+      </div>
+      <label class="field cart-proof-field"><span>Bukti transfer (opsional)</span><input id="cartPaymentProof" type="file" accept="image/*" /></label>
+      <div id="cartTotals" class="cart-totals"></div>
+      <div class="modal-actions">
+        <button type="button" class="ghost-btn" data-close="cartModal">Lanjut Belanja</button>
+        <button type="button" class="primary-btn" id="checkoutCartBtn">Buat Pesanan</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div class="modal-backdrop" id="productModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div><h3 id="productModalTitle">Tambah Produk</h3><p>Isi informasi produk minuman.</p></div>
+        <button class="icon-btn modal-close" data-close="productModal">×</button>
+      </div>
+      <form id="productForm">
+        <input type="hidden" id="productId" />
+        <div class="product-image-editor">
+          <div class="image-preview" id="imagePreview">IMG</div>
+          <label class="secondary-btn file-label compact">
+            Pilih Gambar
+            <input type="file" id="productImage" accept="image/*" hidden />
+          </label>
+          <input type="hidden" id="productImageData" />
+        </div>
+        <div class="form-grid">
+          <label class="field full">
+            <span>Nama produk</span>
+            <input id="productName" required placeholder="Contoh: Matcha Latte" />
+          </label>
+          <label class="field">
+            <span>Kategori</span>
+            <input id="productCategory" required placeholder="Contoh: Matcha" />
+          </label>
+          <label class="field">
+            <span>Isi / ukuran (ml)</span>
+            <input id="productVolume" type="number" min="1" required placeholder="250" />
+          </label>
+          <label class="field">
+            <span>Stok awal</span>
+            <input id="productStock" type="number" min="0" required value="0" />
+          </label>
+          <label class="field">
+            <span>Harga modal / unit</span>
+            <input id="productCost" type="number" min="0" required placeholder="8000" />
+          </label>
+          <label class="field">
+            <span>Harga jual / unit</span>
+            <input id="productPrice" type="number" min="0" required placeholder="15000" />
+          </label>
+        </div>
+        <div class="profit-preview" id="profitPreview">Laba per unit: Rp0</div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" data-close="productModal">Batal</button>
+          <button type="submit" class="primary-btn">Simpan Produk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TRANSACTION MODAL -->
+  <div class="modal-backdrop" id="transactionModal">
+    <div class="modal small-modal">
+      <div class="modal-head">
+        <div><h3 id="transactionModalTitle">Transaksi</h3><p id="transactionModalDesc">Catat perubahan stok.</p></div>
+        <button class="icon-btn modal-close" data-close="transactionModal">×</button>
+      </div>
+      <form id="transactionForm">
+        <input type="hidden" id="transactionType" value="out" />
+        <label class="field">
+          <span>Produk</span>
+          <select id="transactionProduct" required></select>
+        </label>
+        <div class="form-grid">
+          <label class="field">
+            <span>Jumlah unit</span>
+            <input id="transactionQty" type="number" min="1" required value="1" />
+          </label>
+          <label class="field">
+            <span>Tanggal & waktu</span>
+            <input id="transactionDate" type="datetime-local" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>Catatan (opsional)</span>
+          <input id="transactionNote" placeholder="Contoh: Penjualan toko" />
+        </label>
+        <div id="saleDetailsFields" class="sale-details-fields">
+          <div class="form-grid">
+            <label class="field">
+              <span>Nama pelanggan</span>
+              <input id="saleCustomer" placeholder="Nama penerima" />
+            </label>
+            <label class="field">
+              <span>Pengantaran ke</span>
+              <input id="saleAddress" placeholder="Alamat / area pengantaran" />
+            </label>
+            <label class="field">
+              <span>Biaya pengantaran</span>
+              <input id="saleDeliveryCost" type="number" min="0" value="0" />
+            </label>
+            <label class="field">
+              <span>Diskon</span>
+              <input id="saleDiscount" type="number" min="0" value="0" />
+            </label>
+          </div>
+          <label class="field proof-upload">
+            <span>Bukti transfer (opsional)</span>
+            <input id="salePaymentProof" type="file" accept="image/*" />
+          </label>
+        </div>
+        <div class="transaction-preview" id="transactionPreview"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" data-close="transactionModal">Batal</button>
+          <button type="submit" class="primary-btn" id="transactionSubmitBtn">Simpan Transaksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="capitalItemModal">
+    <div class="modal small-modal">
+      <div class="modal-head">
+        <div><h3>Masukkan Modal</h3><p id="capitalItemModalDesc">Isi barang, harga, dan jumlah.</p></div>
+        <button class="icon-btn modal-close" data-close="capitalItemModal">×</button>
+      </div>
+      <form id="capitalItemForm">
+        <input type="hidden" id="capitalItemMonth" />
+        <label class="field">
+          <span>Nama barang</span>
+          <input id="capitalItemName" required placeholder="Contoh: Cup plastik 16 oz" />
+        </label>
+        <div class="form-grid">
+          <label class="field">
+            <span>Harga</span>
+            <input id="capitalItemPrice" type="number" min="1" step="1" required placeholder="Contoh: 35000" />
+          </label>
+          <label class="field">
+            <span>Jumlah</span>
+            <input id="capitalItemQty" type="number" min="1" step="1" required value="1" />
+          </label>
+        </div>
+        <div class="transaction-preview" id="capitalItemPreview">Total modal: Rp0</div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" data-close="capitalItemModal">Batal</button>
+          <button type="submit" class="primary-btn">Simpan Modal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="receiptModal">
+    <article class="modal receipt-modal">
+      <div class="modal-head">
+        <div><h3>Pratinjau Invoice</h3><p id="receiptSubtitle"></p></div>
+        <button class="icon-btn modal-close" data-close="receiptModal" aria-label="Tutup struk">×</button>
+      </div>
+      <div id="receiptContent"></div>
+      <div class="modal-actions">
+        <button type="button" class="ghost-btn" data-close="receiptModal">Tutup</button>
+        <button type="button" class="secondary-btn" id="downloadInvoiceWordBtn">Unduh Word</button>
+        <button type="button" class="secondary-btn" id="downloadInvoicePdfBtn">Unduh PDF</button>
+        <button type="button" class="primary-btn" id="printReceiptBtn">Cetak Struk</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="modal-backdrop confirmation-backdrop" id="confirmationModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmationTitle" aria-describedby="confirmationMessage">
+    <section class="confirmation-dialog">
+      <span class="confirmation-mark" id="confirmationMark">?</span>
+      <h3 id="confirmationTitle">Konfirmasi tindakan</h3>
+      <p id="confirmationMessage"></p>
+      <div class="confirmation-actions">
+        <button type="button" class="ghost-btn" id="cancelConfirmationBtn">Batal</button>
+        <button type="button" class="primary-btn" id="acceptConfirmationBtn">Konfirmasi</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
