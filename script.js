@@ -1,5 +1,9 @@
 const STORAGE_KEY = "drinkstock_v1";
 const NAV_ORDER_KEY = "drinkstock_nav_order_v1";
+const SUPABASE_URL = "https://yjwekgwlrghsxjidzimz.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UA-Hd1rmm9AkXPrE9lCCeA_VN3dy7d5";
+const SUPABASE_TABLE = "app_state";
+const SUPABASE_ROW_ID = "drinkstock_main";
 
 const rupiah = (n) =>
   new Intl.NumberFormat("id-ID", {
@@ -249,6 +253,9 @@ let currentReceiptId = null;
 let confirmationResolver = null;
 let selectedOrderStatus = "all";
 let selectedCapitalMonth = monthKey(new Date());
+let supabaseClient = null;
+let supabaseSyncReady = false;
+let supabaseSaveTimer = null;
 
 function loadState() {
   try {
@@ -257,13 +264,29 @@ function loadState() {
       ? JSON.parse(raw)
       : seedData();
 
-    loaded.orders ||= [];
-    loaded.cart ||= [];
-    loaded.capitalEntries = normalizeCapitalEntries(loaded.capitalEntries || []);
-    return loaded;
+    return normalizeState(loaded);
   } catch {
     return seedData();
   }
+}
+
+function normalizeState(data = seedData()) {
+  data.settings ||= {};
+  data.products ||= [];
+  data.transactions ||= [];
+  data.orders ||= [];
+  data.cart ||= [];
+  data.capitalEntries = normalizeCapitalEntries(data.capitalEntries || []);
+  return data;
+}
+
+function hasBusinessData(data) {
+  return Boolean(
+    data?.products?.length ||
+    data?.transactions?.length ||
+    data?.orders?.length ||
+    data?.capitalEntries?.length
+  );
 }
 
 function normalizeCapitalEntries(entries = []) {
@@ -289,6 +312,105 @@ function saveState() {
     STORAGE_KEY,
     JSON.stringify(state)
   );
+
+  scheduleSupabaseSave();
+}
+
+function setStorageStatus(title, detail, active = true) {
+  const titleEl = document.getElementById("storageStatusTitle");
+  const detailEl = document.getElementById("storageStatusDetail");
+  const dotEl = document.querySelector(".mini-card .dot");
+
+  if (titleEl) titleEl.textContent = title;
+  if (detailEl) detailEl.textContent = detail;
+  if (dotEl) dotEl.classList.toggle("offline", !active);
+}
+
+function initSupabaseClient() {
+  if (!window.supabase?.createClient) {
+    setStorageStatus("Data lokal aktif", "SDK Supabase belum termuat", false);
+    return null;
+  }
+
+  return window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+}
+
+async function initSupabaseSync() {
+  supabaseClient = initSupabaseClient();
+  if (!supabaseClient) return;
+
+  setStorageStatus("Menghubungkan Supabase", "Menyiapkan sinkronisasi...", true);
+
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_TABLE)
+      .select("data")
+      .eq("id", SUPABASE_ROW_ID)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    supabaseSyncReady = true;
+
+    if (data?.data) {
+      const remoteState = normalizeState(data.data);
+      if (!hasBusinessData(remoteState) && hasBusinessData(state)) {
+        await saveStateToSupabase();
+        setStorageStatus("Supabase tersambung", "Data lokal dikirim ke database", true);
+        showToast("Data lokal berhasil dikirim ke Supabase.");
+        return;
+      }
+
+      state = remoteState;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+      setStorageStatus("Supabase tersambung", "Data diambil dari database", true);
+      showToast("Data Supabase berhasil dimuat.");
+      return;
+    }
+
+    await saveStateToSupabase();
+    setStorageStatus("Supabase tersambung", "Data awal dikirim ke database", true);
+  } catch (error) {
+    supabaseSyncReady = false;
+    setStorageStatus("Data lokal aktif", "Buat tabel Supabase dulu", false);
+    console.error("Supabase sync error:", error);
+    showToast("Supabase belum siap. Jalankan supabase-schema.sql sekali.");
+  }
+}
+
+function scheduleSupabaseSave() {
+  if (!supabaseSyncReady || !supabaseClient) return;
+
+  clearTimeout(supabaseSaveTimer);
+  supabaseSaveTimer = setTimeout(() => {
+    saveStateToSupabase();
+  }, 650);
+}
+
+async function saveStateToSupabase() {
+  if (!supabaseClient) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from(SUPABASE_TABLE)
+      .upsert({
+        id: SUPABASE_ROW_ID,
+        data: state,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+    supabaseSyncReady = true;
+    setStorageStatus("Supabase tersambung", "Data tersimpan otomatis", true);
+  } catch (error) {
+    supabaseSyncReady = false;
+    setStorageStatus("Data lokal aktif", "Gagal simpan ke Supabase", false);
+    console.error("Supabase save error:", error);
+  }
 }
 
 function productById(id) {
@@ -4497,5 +4619,6 @@ document.addEventListener(
   () => {
     setupEvents();
     renderAll();
+    initSupabaseSync();
   }
 );

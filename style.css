@@ -98,6 +98,7 @@ img { display: block; max-width: 100%; }
   border-radius: 14px;
 }
 .mini-card .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,.13); }
+.mini-card .dot.offline { background: #f97316; box-shadow: 0 0 0 4px rgba(249,115,22,.14); }
 .mini-card strong { display: block; font-size: 11px; }
 .mini-card small { display: block; font-size: 10px; color: #8fa0b7; margin-top: 2px; }
 
