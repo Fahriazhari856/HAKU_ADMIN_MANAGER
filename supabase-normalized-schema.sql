@@ -266,6 +266,74 @@ create trigger set_updated_at_payment_proofs
 before update on public.payment_proofs
 for each row execute function public.set_updated_at();
 
+-- VIEW RINGKASAN PENJUALAN
+-- total_sold menghitung berapa unit yang sudah terjual.
+-- Transaksi dari order refund tidak dihitung sebagai penjualan aktif.
+
+create or replace view public.product_sales_summary
+with (security_invoker = true)
+as
+select
+  p.business_id,
+  p.id as product_id,
+  p.name as product_name,
+  p.category,
+  p.stock as current_stock,
+  coalesce(s.total_sold, 0)::bigint as total_sold,
+  coalesce(s.total_revenue, 0)::numeric(14, 2) as total_revenue,
+  coalesce(s.total_cost, 0)::numeric(14, 2) as total_cost,
+  coalesce(s.total_profit, 0)::numeric(14, 2) as total_profit,
+  s.last_sold_at
+from public.products p
+left join (
+  select
+    st.business_id,
+    st.product_id,
+    sum(st.qty)::bigint as total_sold,
+    sum(greatest(0, (st.unit_price * st.qty) - st.discount)) as total_revenue,
+    sum(st.unit_cost * st.qty) as total_cost,
+    sum(greatest(0, (st.unit_price * st.qty) - st.discount) - (st.unit_cost * st.qty) - st.delivery_cost) as total_profit,
+    max(st.date) as last_sold_at
+  from public.stock_transactions st
+  left join public.orders o
+    on o.id = st.order_id
+    and o.deleted_at is null
+  where st.deleted_at is null
+    and st.type = 'out'
+    and (o.id is null or o.status <> 'refund')
+  group by st.business_id, st.product_id
+) s
+  on s.business_id = p.business_id
+  and s.product_id = p.id
+where p.deleted_at is null;
+
+create or replace view public.monthly_product_sales_summary
+with (security_invoker = true)
+as
+select
+  st.business_id,
+  st.product_id,
+  coalesce(p.name, 'Produk dihapus') as product_name,
+  date_trunc('month', st.date)::date as month,
+  sum(st.qty)::bigint as total_sold,
+  sum(greatest(0, (st.unit_price * st.qty) - st.discount))::numeric(14, 2) as total_revenue,
+  sum(st.unit_cost * st.qty)::numeric(14, 2) as total_cost,
+  sum(greatest(0, (st.unit_price * st.qty) - st.discount) - (st.unit_cost * st.qty) - st.delivery_cost)::numeric(14, 2) as total_profit
+from public.stock_transactions st
+left join public.products p
+  on p.id = st.product_id
+left join public.orders o
+  on o.id = st.order_id
+  and o.deleted_at is null
+where st.deleted_at is null
+  and st.type = 'out'
+  and (o.id is null or o.status <> 'refund')
+group by
+  st.business_id,
+  st.product_id,
+  coalesce(p.name, 'Produk dihapus'),
+  date_trunc('month', st.date)::date;
+
 alter table public.businesses enable row level security;
 alter table public.profiles enable row level security;
 alter table public.business_members enable row level security;
