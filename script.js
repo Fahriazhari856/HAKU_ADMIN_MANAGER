@@ -257,6 +257,7 @@ let selectedCapitalMonth = monthKey(new Date());
 let supabaseClient = null;
 let supabaseSyncReady = false;
 let supabaseSaveTimer = null;
+let deferredInstallPrompt = null;
 
 function loadState() {
   try {
@@ -3482,6 +3483,30 @@ function setupEvents() {
     );
 
   setupNavOrder();
+
+  const installButton = document.getElementById("installAppBtn");
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installButton.hidden = false;
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+  });
+  installButton.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installButton.hidden = true;
+  });
+
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    navigator.serviceWorker.register("./sw.js").catch((error) => {
+      console.error("Service worker registration failed:", error);
+    });
+  }
 
   /* NAV */
 
