@@ -429,6 +429,7 @@ tbody tr:hover { background: #fbfdff; }
 .cart-item-meta strong, .cart-item-meta small { display: block; }
 .cart-item-meta strong { font-size: 11px; }
 .cart-item-meta small { margin-top: 3px; color: var(--muted); font-size: 9px; }
+.cart-sugar-variant { max-width: 130px; margin-top: 6px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--text); font: inherit; font-size: 10px; }
 .cart-quantity { display: flex; align-items: center; gap: 7px; }
 .cart-quantity button { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 6px; background: white; }
 .cart-quantity button:disabled { opacity: .45; cursor: not-allowed; }

@@ -1,5 +1,6 @@
 const STORAGE_KEY = "drinkstock_v1";
 const NAV_ORDER_KEY = "drinkstock_nav_order_v1";
+const SUGAR_VARIANTS = ["Normal Sugar", "Less Sugar"];
 const SUPABASE_URL = "https://yjwekgwlrghsxjidzimz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UA-Hd1rmm9AkXPrE9lCCeA_VN3dy7d5";
 const SUPABASE_TABLE = "app_state";
@@ -275,7 +276,10 @@ function normalizeState(data = seedData()) {
   data.products ||= [];
   data.transactions ||= [];
   data.orders ||= [];
-  data.cart ||= [];
+  data.cart = (data.cart || []).map((item) => ({
+    ...item,
+    sugarVariant: SUGAR_VARIANTS.includes(item.sugarVariant) ? item.sugarVariant : "Normal Sugar"
+  }));
   data.capitalEntries = normalizeCapitalEntries(data.capitalEntries || []);
   return data;
 }
@@ -308,6 +312,7 @@ function normalizeCapitalEntries(entries = []) {
 }
 
 function saveState() {
+  state._savedAt = new Date().toISOString();
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify(state)
@@ -357,10 +362,16 @@ async function initSupabaseSync() {
 
     if (data?.data) {
       const remoteState = normalizeState(data.data);
-      if (!hasBusinessData(remoteState) && hasBusinessData(state)) {
+      const localSavedAt = Date.parse(state._savedAt || "") || 0;
+      const remoteSavedAt = Date.parse(remoteState._savedAt || "") || 0;
+      if (
+        hasBusinessData(state) &&
+        (!hasBusinessData(remoteState) || localSavedAt > remoteSavedAt)
+      ) {
         await saveStateToSupabase();
-        setStorageStatus("Supabase tersambung", "Data lokal dikirim ke database", true);
-        showToast("Data lokal berhasil dikirim ke Supabase.");
+        renderAll();
+        setStorageStatus("Supabase tersambung", "Data lokal terbaru dipulihkan", true);
+        showToast("Data lokal terbaru berhasil dipulihkan ke Supabase.");
         return;
       }
 
@@ -395,6 +406,8 @@ async function saveStateToSupabase() {
   if (!supabaseClient) return;
 
   try {
+    state._savedAt ||= new Date().toISOString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     const { error } = await supabaseClient
       .from(SUPABASE_TABLE)
       .upsert({
@@ -1540,17 +1553,20 @@ function renderCart() {
   const rows = (state.cart || []).map((item) => {
     const product = productById(item.productId);
     if (!product) return "";
+    const variantOptions = SUGAR_VARIANTS.map((variant) =>
+      `<option value="${variant}" ${item.sugarVariant === variant ? "selected" : ""}>${variant}</option>`
+    ).join("");
     return `
       <div class="cart-item">
         <img src="${product.image || makePlaceholder(product.name)}" alt="" />
-        <div class="cart-item-meta"><strong>${esc(product.name)}</strong><small>${rupiah(product.price)} / unit · stok ${number(product.stock)}</small></div>
+        <div class="cart-item-meta"><strong>${esc(product.name)}</strong><small>${rupiah(product.price)} / unit · stok ${number(product.stock)}</small><select class="cart-sugar-variant" aria-label="Varian gula ${esc(product.name)}" onchange="updateCartSugarVariant('${product.id}', '${item.sugarVariant}', this.value)">${variantOptions}</select></div>
         <div class="cart-quantity">
-          <button type="button" aria-label="Kurangi ${esc(product.name)}" onclick="changeCartQuantity('${product.id}', -1)">−</button>
+          <button type="button" aria-label="Kurangi ${esc(product.name)} ${esc(item.sugarVariant)}" onclick="changeCartQuantity('${product.id}', '${item.sugarVariant}', -1)">−</button>
           <strong>${number(item.qty)}</strong>
-          <button type="button" aria-label="Tambah ${esc(product.name)}" onclick="changeCartQuantity('${product.id}', 1)" ${item.qty >= product.stock ? "disabled" : ""}>+</button>
+          <button type="button" aria-label="Tambah ${esc(product.name)} ${esc(item.sugarVariant)}" onclick="changeCartQuantity('${product.id}', '${item.sugarVariant}', 1)" ${state.cart.filter((entry) => entry.productId === product.id).reduce((sum, entry) => sum + Number(entry.qty || 0), 0) >= product.stock ? "disabled" : ""}>+</button>
         </div>
         <strong class="cart-line-total">${rupiah(item.qty * product.price)}</strong>
-        <button type="button" class="mini-btn danger" aria-label="Hapus ${esc(product.name)} dari keranjang" onclick="removeFromCart('${product.id}')">×</button>
+        <button type="button" class="mini-btn danger" aria-label="Hapus ${esc(product.name)} ${esc(item.sugarVariant)} dari keranjang" onclick="removeFromCart('${product.id}', '${item.sugarVariant}')">×</button>
       </div>
     `;
   }).join("");
@@ -1591,7 +1607,7 @@ function renderOrders() {
         const transactions = state.transactions.filter((tx) => tx.orderId === order.id);
         const qty = transactions.reduce((sum, tx) => sum + Number(tx.qty), 0);
         const total = transactions.reduce((sum, tx) => sum + transactionMetrics(tx).revenue, 0);
-        const lines = transactions.map((tx) => `<li>${esc(productById(tx.productId)?.name || "Produk dihapus")} × ${number(tx.qty)}</li>`).join("");
+        const lines = transactions.map((tx) => `<li>${esc(productById(tx.productId)?.name || "Produk dihapus")} · ${esc(tx.sugarVariant || "Normal Sugar")} × ${number(tx.qty)}</li>`).join("");
         const next = order.status === "packing"
           ? `<button class="mini-btn" onclick="setOrderStatus('${order.id}', 'delivery')">Mulai pengantaran</button><button class="mini-btn sale" onclick="setOrderStatus('${order.id}', 'done')">Selesaikan</button>`
           : order.status === "delivery"
@@ -1645,15 +1661,19 @@ function animateProductToCart(trigger) {
 window.addToCart = function (productId, trigger) {
   const product = productById(productId);
   if (!product || Number(product.stock) < 1) return;
-  const item = state.cart.find((entry) => entry.productId === productId);
+  const sugarVariant = "Normal Sugar";
+  const productCartQty = state.cart
+    .filter((entry) => entry.productId === productId)
+    .reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
+  const item = state.cart.find((entry) => entry.productId === productId && entry.sugarVariant === sugarVariant);
+  if (productCartQty >= Number(product.stock)) {
+    showToast(`Stok ${product.name} hanya ${number(product.stock)} unit.`);
+    return;
+  }
   if (item) {
-    if (Number(item.qty) >= Number(product.stock)) {
-      showToast(`Stok ${product.name} hanya ${number(product.stock)} unit.`);
-      return;
-    }
     item.qty += 1;
   } else {
-    state.cart.push({ productId, qty: 1 });
+    state.cart.push({ productId, qty: 1, sugarVariant });
   }
   animateProductToCart(trigger);
   saveState();
@@ -1661,25 +1681,48 @@ window.addToCart = function (productId, trigger) {
   showToast(`${product.name} ditambahkan ke keranjang.`);
 };
 
-window.changeCartQuantity = function (productId, delta) {
-  const item = state.cart.find((entry) => entry.productId === productId);
+window.changeCartQuantity = function (productId, sugarVariant, delta) {
+  const item = state.cart.find((entry) => entry.productId === productId && entry.sugarVariant === sugarVariant);
   const product = productById(productId);
   if (!item || !product) return;
-  item.qty = Math.min(Number(product.stock), Number(item.qty) + delta);
-  if (item.qty <= 0) state.cart = state.cart.filter((entry) => entry.productId !== productId);
+  const productCartQty = state.cart
+    .filter((entry) => entry.productId === productId)
+    .reduce((sum, entry) => sum + Number(entry.qty || 0), 0);
+  if (delta > 0 && productCartQty >= Number(product.stock)) return;
+  item.qty = Number(item.qty) + delta;
+  if (item.qty <= 0) state.cart = state.cart.filter((entry) => entry !== item);
   saveState();
   renderCart();
 };
 
-window.removeFromCart = function (productId) {
-  state.cart = state.cart.filter((entry) => entry.productId !== productId);
+window.updateCartSugarVariant = function (productId, currentVariant, nextVariant) {
+  if (!SUGAR_VARIANTS.includes(nextVariant)) return;
+  const item = state.cart.find((entry) => entry.productId === productId && entry.sugarVariant === currentVariant);
+  if (!item || item.sugarVariant === nextVariant) return;
+  const matchingItem = state.cart.find((entry) => entry.productId === productId && entry.sugarVariant === nextVariant);
+  if (matchingItem) {
+    matchingItem.qty = Number(matchingItem.qty) + Number(item.qty);
+    state.cart = state.cart.filter((entry) => entry !== item);
+  } else {
+    item.sugarVariant = nextVariant;
+  }
+  saveState();
+  renderCart();
+};
+
+window.removeFromCart = function (productId, sugarVariant) {
+  state.cart = state.cart.filter((entry) => !(entry.productId === productId && entry.sugarVariant === sugarVariant));
   saveState();
   renderCart();
 };
 
 async function checkoutCart() {
   const items = state.cart.map((entry) => ({ ...entry, product: productById(entry.productId) }));
-  if (!items.length || items.some((item) => !item.product || item.qty < 1 || item.qty > item.product.stock)) {
+  const quantitiesByProduct = items.reduce((totals, item) => {
+    totals[item.productId] = (totals[item.productId] || 0) + Number(item.qty || 0);
+    return totals;
+  }, {});
+  if (!items.length || items.some((item) => !item.product || item.qty < 1 || quantitiesByProduct[item.productId] > item.product.stock)) {
     showToast("Periksa kembali isi keranjang dan ketersediaan stok.");
     renderCart();
     return;
@@ -1740,6 +1783,7 @@ async function checkoutCart() {
       orderId,
       type: "out",
       productId: item.productId,
+      sugarVariant: item.sugarVariant,
       qty: Number(item.qty),
       date: orderDate,
       note: `Pesanan ${orderId}`,
