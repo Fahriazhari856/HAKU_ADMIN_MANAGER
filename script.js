@@ -3488,13 +3488,13 @@ function setupEvents() {
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    installButton.hidden = false;
+    if (installButton) installButton.hidden = false;
   });
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
-    installButton.hidden = true;
+    if (installButton) installButton.hidden = true;
   });
-  installButton.addEventListener("click", async () => {
+  installButton?.addEventListener("click", async () => {
     if (!deferredInstallPrompt) return;
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
@@ -3664,8 +3664,8 @@ function setupEvents() {
     });
   });
 
-  document.getElementById("addOrderEditLineBtn").addEventListener("click", () => appendOrderEditLine());
-  document.getElementById("orderEditForm").addEventListener("submit", saveOrderEdit);
+  document.getElementById("addOrderEditLineBtn")?.addEventListener("click", () => appendOrderEditLine());
+  document.getElementById("orderEditForm")?.addEventListener("submit", saveOrderEdit);
 
   document
     .getElementById(

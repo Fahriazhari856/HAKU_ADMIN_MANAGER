@@ -4,7 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="DrinkStock" />
   <title>DrinkStock — Manajemen Usaha Minuman</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -12,7 +18,7 @@
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="brand-logo">DS</div>
+        <img class="brand-logo" src="./icon.svg" alt="Haku" />
         <div>
           <strong id="brandNameSide">DrinkStock</strong>
           <small>Business Manager</small>
@@ -49,6 +55,7 @@
           <p id="pageSubtitle">Ringkasan usaha hari ini.</p>
         </div>
         <div class="topbar-actions">
+          <button class="secondary-btn install-app-btn" id="installAppBtn" type="button" hidden><span aria-hidden="true">↓</span> Install App</button>
           <div class="today-chip" id="todayChip"></div>
         </div>
       </header>
@@ -532,6 +539,33 @@
         <button type="button" class="ghost-btn" data-close="cartModal">Lanjut Belanja</button>
         <button type="button" class="primary-btn" id="checkoutCartBtn">Buat Pesanan</button>
       </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="orderEditModal">
+    <section class="modal order-edit-modal">
+      <div class="modal-head">
+        <div><h3>Edit Pesanan</h3><p id="orderEditSubtitle">Perbarui detail pesanan dan itemnya.</p></div>
+        <button type="button" class="icon-btn modal-close" data-close="orderEditModal" aria-label="Tutup edit pesanan">×</button>
+      </div>
+      <form id="orderEditForm">
+        <input type="hidden" id="orderEditId" />
+        <div class="form-grid">
+          <label class="field"><span>Nama pelanggan</span><input id="orderEditCustomer" required /></label>
+          <label class="field"><span>Alamat pengantaran</span><input id="orderEditAddress" /></label>
+          <label class="field"><span>Biaya pengantaran</span><input id="orderEditDeliveryCost" type="number" min="0" step="1" required /></label>
+          <label class="field"><span>Diskon pesanan</span><input id="orderEditDiscount" type="number" min="0" step="1" required /></label>
+        </div>
+        <div class="order-edit-items-head">
+          <strong>Item pesanan</strong>
+          <button type="button" class="secondary-btn" id="addOrderEditLineBtn">+ Tambah item</button>
+        </div>
+        <div id="orderEditItems" class="order-edit-items"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" data-close="orderEditModal">Batal</button>
+          <button type="submit" class="primary-btn">Simpan Perubahan</button>
+        </div>
+      </form>
     </section>
   </div>
 
