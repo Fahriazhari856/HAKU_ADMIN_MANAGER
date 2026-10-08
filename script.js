@@ -1621,11 +1621,182 @@ function renderOrders() {
             <div class="order-card-top"><div><small>${esc(order.id)} · ${new Date(order.date).toLocaleString("id-ID")}</small><h3>${esc(order.customerName || "Pelanggan umum")}</h3></div><span class="order-status-badge ${esc(order.status)}">${statusLabels[order.status] || "Packing"}</span></div>
             <ul class="order-lines">${lines}</ul>
             <div class="order-meta"><span>${number(qty)} unit · ${esc(order.deliveryAddress || "Ambil di tempat")}</span><strong>${rupiah(total)}</strong></div>
-            <div class="order-actions">${next}${refundButton}</div>
+            <div class="order-actions"><button class="mini-btn" onclick="editOrder('${order.id}')">Edit</button><button class="mini-btn danger" onclick="deleteOrder('${order.id}')">Hapus</button>${next}${refundButton}</div>
           </article>
         `;
       }).join("")
     : `<div class="empty-state order-empty">Belum ada pesanan pada status ini. Tambahkan produk ke keranjang dari halaman Jualan.</div>`;
+}
+
+function orderEditLineMarkup(transaction = {}) {
+  const productOptions = state.products.map((product) =>
+    `<option value="${esc(product.id)}" ${product.id === transaction.productId ? "selected" : ""}>${esc(product.name)} · stok ${number(product.stock)}</option>`
+  ).join("");
+  const variantOptions = SUGAR_VARIANTS.map((variant) =>
+    `<option value="${variant}" ${(transaction.sugarVariant || "Normal Sugar") === variant ? "selected" : ""}>${variant}</option>`
+  ).join("");
+
+  return `
+    <div class="order-edit-line" data-transaction-id="${esc(transaction.id || "")}">
+      <label class="field"><span>Produk</span><select class="order-edit-product" required><option value="">Pilih produk</option>${productOptions}</select></label>
+      <label class="field"><span>Jumlah</span><input class="order-edit-qty" type="number" min="1" step="1" value="${Math.max(1, Number(transaction.qty || 1))}" required /></label>
+      <label class="field"><span>Varian gula</span><select class="order-edit-variant">${variantOptions}</select></label>
+      <button type="button" class="mini-btn danger order-edit-remove" aria-label="Hapus item pesanan" onclick="removeOrderEditLine(this)">Hapus</button>
+    </div>
+  `;
+}
+
+function appendOrderEditLine(transaction = {}) {
+  document.getElementById("orderEditItems").insertAdjacentHTML("beforeend", orderEditLineMarkup(transaction));
+}
+
+window.editOrder = function (orderId) {
+  const order = state.orders.find((entry) => entry.id === orderId);
+  if (!order) return;
+
+  const transactions = state.transactions.filter((entry) => entry.orderId === orderId);
+  document.getElementById("orderEditId").value = order.id;
+  document.getElementById("orderEditSubtitle").textContent = `Pesanan ${order.id} · status ${order.status}.`;
+  document.getElementById("orderEditCustomer").value = order.customerName || "";
+  document.getElementById("orderEditAddress").value = order.deliveryAddress || "";
+  document.getElementById("orderEditDeliveryCost").value = Number(order.deliveryCost || 0);
+  document.getElementById("orderEditDiscount").value = Number(order.discount || 0);
+  document.getElementById("orderEditItems").innerHTML = transactions.map(orderEditLineMarkup).join("");
+  if (!transactions.length) appendOrderEditLine();
+  openModal("orderEditModal");
+};
+
+window.removeOrderEditLine = function (button) {
+  button.closest(".order-edit-line")?.remove();
+};
+
+window.deleteOrder = async function (orderId) {
+  const order = state.orders.find((entry) => entry.id === orderId);
+  if (!order) return;
+
+  const transactions = state.transactions.filter((entry) => entry.orderId === orderId);
+  const accepted = await requestConfirmation({
+    title: "Hapus pesanan?",
+    message: `Pesanan ${order.id} beserta ${number(transactions.length)} item transaksinya akan dihapus. ${order.refundApplied ? "Stok tidak diubah karena pesanan sudah direfund." : "Stok dari pesanan akan dikembalikan."}`,
+    confirmLabel: "Hapus pesanan",
+    danger: true
+  });
+  if (!accepted) return;
+
+  if (!order.refundApplied) {
+    transactions.forEach((transaction) => {
+      const product = productById(transaction.productId);
+      if (product) product.stock = Number(product.stock) + Number(transaction.qty || 0);
+    });
+  }
+  state.transactions = state.transactions.filter((entry) => entry.orderId !== orderId);
+  state.orders = state.orders.filter((entry) => entry.id !== orderId);
+  saveState();
+  renderAll();
+  showToast("Pesanan dan transaksi terkait berhasil dihapus.");
+};
+
+async function saveOrderEdit(event) {
+  event.preventDefault();
+  const orderId = document.getElementById("orderEditId").value;
+  const order = state.orders.find((entry) => entry.id === orderId);
+  if (!order) return;
+
+  const oldTransactions = state.transactions.filter((entry) => entry.orderId === orderId);
+  const oldById = new Map(oldTransactions.map((entry) => [entry.id, entry]));
+  const rows = [...document.querySelectorAll("#orderEditItems .order-edit-line")];
+  const items = rows.map((row) => {
+    const product = productById(row.querySelector(".order-edit-product").value);
+    const qty = Number(row.querySelector(".order-edit-qty").value);
+    return {
+      product,
+      qty,
+      sugarVariant: row.querySelector(".order-edit-variant").value,
+      original: oldById.get(row.dataset.transactionId)
+    };
+  });
+
+  if (!items.length || items.some((item) => !item.product || !Number.isInteger(item.qty) || item.qty < 1 || !SUGAR_VARIANTS.includes(item.sugarVariant))) {
+    showToast("Tambahkan minimal satu item dan periksa jumlah serta variannya.");
+    return;
+  }
+
+  const stockDeltas = new Map(state.products.map((product) => [product.id, 0]));
+  if (!order.refundApplied) {
+    oldTransactions.forEach((transaction) => {
+      if (stockDeltas.has(transaction.productId)) {
+        stockDeltas.set(transaction.productId, stockDeltas.get(transaction.productId) + Number(transaction.qty || 0));
+      }
+    });
+    items.forEach((item) => {
+      stockDeltas.set(item.product.id, stockDeltas.get(item.product.id) - item.qty);
+    });
+    const insufficientProduct = state.products.find((product) => Number(product.stock) + stockDeltas.get(product.id) < 0);
+    if (insufficientProduct) {
+      showToast(`Stok ${insufficientProduct.name} tidak cukup untuk perubahan pesanan.`);
+      return;
+    }
+  }
+
+  const updatedTransactions = items.map((item) => ({
+    ...(item.original || {}),
+    id: item.original?.id || uid("tx"),
+    orderId,
+    type: "out",
+    productId: item.product.id,
+    sugarVariant: item.sugarVariant,
+    qty: item.qty,
+    date: item.original?.date || order.date,
+    note: `Pesanan ${orderId}`,
+    unitCost: item.original?.productId === item.product.id ? Number(item.original.unitCost ?? item.product.cost) : Number(item.product.cost),
+    unitPrice: item.original?.productId === item.product.id ? Number(item.original.unitPrice ?? item.product.price) : Number(item.product.price)
+  }));
+  const grossTotal = updatedTransactions.reduce((sum, transaction) => sum + transaction.qty * transaction.unitPrice, 0);
+  const discount = Math.max(0, Number(document.getElementById("orderEditDiscount").value || 0));
+  const deliveryCost = Math.max(0, Number(document.getElementById("orderEditDeliveryCost").value || 0));
+  if (discount > grossTotal) {
+    showToast("Diskon tidak boleh melebihi subtotal produk.");
+    return;
+  }
+
+  const accepted = await requestConfirmation({
+    title: "Simpan perubahan pesanan?",
+    message: `Perbarui pesanan ${order.id} dengan ${number(updatedTransactions.reduce((sum, transaction) => sum + transaction.qty, 0))} unit? Stok dan laporan akan disesuaikan.`,
+    confirmLabel: "Simpan perubahan"
+  });
+  if (!accepted) return;
+
+  let remainingDiscount = discount;
+  let remainingDelivery = deliveryCost;
+  updatedTransactions.forEach((transaction, index) => {
+    const gross = transaction.qty * transaction.unitPrice;
+    const last = index === updatedTransactions.length - 1;
+    const weight = grossTotal > 0 ? gross / grossTotal : 1 / updatedTransactions.length;
+    transaction.discount = last ? remainingDiscount : Math.round(discount * weight);
+    transaction.deliveryCost = last ? remainingDelivery : Math.round(deliveryCost * weight);
+    remainingDiscount -= transaction.discount;
+    remainingDelivery -= transaction.deliveryCost;
+    transaction.customerName = document.getElementById("orderEditCustomer").value.trim();
+    transaction.deliveryAddress = document.getElementById("orderEditAddress").value.trim();
+  });
+
+  if (!order.refundApplied) {
+    stockDeltas.forEach((delta, productId) => {
+      const product = productById(productId);
+      if (product) product.stock = Number(product.stock) + delta;
+    });
+  }
+  const firstIndex = state.transactions.findIndex((entry) => entry.orderId === orderId);
+  state.transactions = state.transactions.filter((entry) => entry.orderId !== orderId);
+  state.transactions.splice(Math.max(0, firstIndex), 0, ...updatedTransactions);
+  order.customerName = document.getElementById("orderEditCustomer").value.trim();
+  order.deliveryAddress = document.getElementById("orderEditAddress").value.trim();
+  order.discount = discount;
+  order.deliveryCost = deliveryCost;
+  saveState();
+  closeModal("orderEditModal");
+  renderAll();
+  showToast("Perubahan pesanan berhasil disimpan.");
 }
 
 function animateProductToCart(trigger) {
@@ -3467,6 +3638,9 @@ function setupEvents() {
       renderOrders();
     });
   });
+
+  document.getElementById("addOrderEditLineBtn").addEventListener("click", () => appendOrderEditLine());
+  document.getElementById("orderEditForm").addEventListener("submit", saveOrderEdit);
 
   document
     .getElementById(
