@@ -17,6 +17,8 @@
   async function startHaku() {
     if (hakuStarted) return;
     hakuStarted = true;
+    document.body.dataset.brandApp = "haku";
+    window.WorkspaceBranding?.apply();
     launcher.hidden = true;
     hakuApp.hidden = false;
     document.getElementById("storageStatusTitle").textContent = "Menyiapkan HAKU";
@@ -36,6 +38,8 @@
       hakuStarted = false;
       hakuApp.hidden = true;
       launcher.hidden = false;
+      document.body.dataset.brandApp = "workspace";
+      window.WorkspaceBranding?.apply();
       document.querySelector(".launcher-caption").textContent = "HAKU gagal dimuat. Periksa koneksi lalu coba lagi.";
     }
   }

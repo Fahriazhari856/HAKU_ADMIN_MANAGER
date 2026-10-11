@@ -14,12 +14,13 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="launcher.css" />
+  <link rel="stylesheet" href="branding.css" />
 </head>
-<body>
+<body data-brand-app="workspace">
   <main class="launcher-screen" id="appLauncher">
     <header class="launcher-topbar">
-      <a class="launcher-brand" href="./" aria-label="HAKU Workspace"><span class="launcher-mark">H</span><span><strong>HAKU</strong><small>WORKSPACE</small></span></a>
-      <span class="launcher-caption">SATU RUANG KERJA <i></i> DUA SISTEM</span>
+      <a class="launcher-brand" href="./" aria-label="HAKU Workspace"><span class="launcher-mark" data-brand-logo="workspace">H</span><span><strong>HAKU</strong><small>WORKSPACE</small></span></a>
+      <div class="launcher-top-actions"><span class="launcher-caption">SATU RUANG KERJA <i></i> DUA SISTEM</span><button class="branding-open" id="openBrandingBtn" type="button">⚙ Pengaturan</button></div>
     </header>
     <section class="launcher-intro">
       <div><span class="launcher-eyebrow">PILIH RUANG KERJA</span><h1>Semua kerja,<br /><em>punya tempatnya.</em></h1></div>
@@ -27,12 +28,12 @@
     </section>
     <section class="launcher-apps" aria-label="Daftar aplikasi">
       <article class="launcher-app launcher-haku">
-        <div class="launcher-app-meta"><span>01 / USAHA MINUMAN</span><span class="app-symbol">H</span></div>
+        <div class="launcher-app-meta"><span>01 / USAHA MINUMAN</span><span class="app-symbol" data-brand-logo="haku">H</span></div>
         <div><h2>HAKU</h2><p>Stok, penjualan, pesanan, modal usaha, dan laporan.</p></div>
         <button class="launcher-open" id="openHakuBtn" type="button">Buka HAKU <span aria-hidden="true">↗</span></button>
       </article>
       <article class="launcher-app launcher-freelance">
-        <div class="launcher-app-meta"><span>02 / KERJA KREATIF</span><span class="app-symbol">S</span></div>
+        <div class="launcher-app-meta"><span>02 / KERJA KREATIF</span><span class="app-symbol" data-brand-logo="studio">S</span></div>
         <div><h2>Studio Desk</h2><p>Klien, proyek desain dan prototype, pembayaran, serta penghasilan tim.</p></div>
         <a class="launcher-open" href="./freelance.html">Buka Freelance Manager <span aria-hidden="true">↗</span></a>
       </article>
@@ -43,7 +44,7 @@
   <div class="app-shell" id="hakuApp" hidden>
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <img class="brand-logo" src="./icon.svg" alt="Haku" />
+        <span class="brand-logo workspace-logo" data-brand-logo="haku" aria-label="Logo HAKU">H</span>
         <div>
           <strong id="brandNameSide">DrinkStock</strong>
           <small>Business Manager</small>
@@ -768,6 +769,8 @@
 
   <div class="toast" id="toast"></div>
 
+<dialog class="branding-dialog" id="brandingDialog"><form id="brandingForm"><div class="branding-heading"><div><h2>Logo Workspace & aplikasi</h2><p>Atur logo yang tampil di halaman Workspace, HAKU, dan Studio Desk.</p></div><button class="branding-close" type="button" aria-label="Tutup pengaturan logo" onclick="this.closest('dialog').close()">×</button></div><div class="branding-grid"><section class="branding-logo-card"><div class="branding-preview workspace-logo" data-brand-preview="workspace" aria-label="Pratinjau logo Workspace">H</div><h3>Workspace</h3><label class="branding-field">Jenis logo<select id="brandingMode_workspace"><option value="initial">Inisial bawaan</option><option value="image">Gambar sendiri</option></select></label><label class="branding-field">Inisial<input id="brandingInitial_workspace" maxlength="3" value="H" /></label><label class="branding-field" hidden>Unggah logo<input id="brandingUpload_workspace" type="file" accept="image/png,image/jpeg,image/webp" /><small>PNG, JPG, atau WebP. Maksimal 5 MB.</small></label></section><section class="branding-logo-card"><div class="branding-preview workspace-logo" data-brand-preview="haku" aria-label="Pratinjau logo HAKU">H</div><h3>HAKU</h3><label class="branding-field">Jenis logo<select id="brandingMode_haku"><option value="initial">Inisial bawaan</option><option value="image">Gambar sendiri</option></select></label><label class="branding-field">Inisial<input id="brandingInitial_haku" maxlength="3" value="H" /></label><label class="branding-field" hidden>Unggah logo<input id="brandingUpload_haku" type="file" accept="image/png,image/jpeg,image/webp" /><small>PNG, JPG, atau WebP. Maksimal 5 MB.</small></label></section><section class="branding-logo-card"><div class="branding-preview workspace-logo" data-brand-preview="studio" aria-label="Pratinjau logo Studio Desk">S</div><h3>Studio Desk</h3><label class="branding-field">Jenis logo<select id="brandingMode_studio"><option value="initial">Inisial bawaan</option><option value="image">Gambar sendiri</option></select></label><label class="branding-field">Inisial<input id="brandingInitial_studio" maxlength="3" value="S" /></label><label class="branding-field" hidden>Unggah logo<input id="brandingUpload_studio" type="file" accept="image/png,image/jpeg,image/webp" /><small>PNG, JPG, atau WebP. Maksimal 5 MB.</small></label></section></div><section class="branding-general"><h3>Tampilan logo umum</h3><div class="branding-general-fields"><label class="branding-field">Latar logo<select id="brandingBackground"><option value="default">Bawaan setiap aplikasi</option><option value="lime">Hijau muda</option><option value="dark">Hijau gelap</option></select></label><label class="branding-field">Bentuk logo<select id="brandingShape"><option value="rounded">Kotak membulat</option><option value="circle">Lingkaran</option></select></label></div></section><p id="brandingMessage" role="status" aria-live="polite"></p><div class="branding-actions"><button type="button" id="resetBrandingBtn">Kembalikan logo bawaan</button><button type="submit" id="saveBrandingBtn">Simpan logo</button></div></form></dialog>
+  <script src="branding.js"></script>
   <script src="launcher.js"></script>
 </body>
 </html>

@@ -28,3 +28,9 @@ Buat card projek dengan nama, kategori, dan deadline, lalu tambahkan beberapa cl
 Halaman Pemasukan menggabungkan invoice per client atau seluruh projek, pelunasan sebagian/penuh, cetak invoice, riwayat pemasukan, dan pengeluaran tim. Total Pemasukan memakai filter minggu berjalan (Senin sampai hari ini) atau bulan berjalan. Prediksi Pemasukan menghitung seluruh sisa kesepakatan yang belum lunas, termasuk client yang belum selesai; client dibatalkan tidak dihitung. Invoice baru tidak dihitung sebagai uang diterima sampai pelunasannya dicatat.
 
 Catatan keamanan: aplikasi ini belum memakai login. Policy anon membolehkan pengunjung yang memiliki URL dan publishable key membaca serta mengubah dua baris aplikasi tersebut. Jangan masukkan data klien sensitif atau publikasikan aplikasi sebelum menambahkan Supabase Auth dan policy berbasis akun.
+
+## Logo Workspace dan aplikasi
+
+Di halaman awal Workspace, buka **Pengaturan** untuk mengubah logo Workspace, HAKU, dan Studio Desk. Pilih inisial bawaan atau unggah PNG/JPG/WebP (maksimal 5 MB); gambar diperkecil otomatis. Pilihan latar dan bentuk logo berlaku untuk ketiga aplikasi. Logo tampil pada pemilih aplikasi, sidebar, dan favicon tab browser.
+
+Jalankan `supabase-workspace-branding.sql` di Supabase SQL Editor untuk menambahkan baris `workspace_main` beserta policy sinkronisasi. Query tidak menimpa logo yang sudah tersimpan atau data HAKU/Studio Desk. Pengaturan tetap disimpan lokal bila sinkronisasi belum tersedia. Ikon instalasi PWA menggunakan aset ikon statis pada manifest.

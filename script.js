@@ -57,8 +57,8 @@ function makePlaceholder(label = "DR") {
   <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180">
     <defs>
       <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop stop-color="#dbeafe"/>
-        <stop offset="1" stop-color="#93c5fd"/>
+        <stop stop-color="#e4edcf"/>
+        <stop offset="1" stop-color="#9bb751"/>
       </linearGradient>
     </defs>
 
@@ -84,7 +84,7 @@ function makePlaceholder(label = "DR") {
       font-family="Arial,sans-serif"
       font-size="52"
       font-weight="700"
-      fill="#1d4ed8"
+      fill="#316b59"
     >
       ${text}
     </text>
@@ -2566,9 +2566,9 @@ function renderDailyChart() {
             label: "Omzet",
             data: rev,
             borderColor:
-              "#2563eb",
+              "#3e806b",
             backgroundColor:
-              "rgba(37,99,235,.08)",
+              "rgba(62,128,107,.08)",
             tension: 0.36,
             fill: true,
             borderWidth: 2,
@@ -2578,9 +2578,9 @@ function renderDailyChart() {
             label: "Laba",
             data: prof,
             borderColor:
-              "#059669",
+              "#b6d449",
             backgroundColor:
-              "rgba(5,150,105,.03)",
+              "rgba(182,212,73,.03)",
             tension: 0.36,
             fill: false,
             borderWidth: 2,
@@ -2621,7 +2621,7 @@ function renderDailyChart() {
               },
 
               color:
-                "#94a3b8"
+                "#858a7d"
             }
           },
 
@@ -2630,7 +2630,7 @@ function renderDailyChart() {
 
             grid: {
               color:
-                "#eef2f7"
+                "#e5e7df"
             },
 
             ticks: {
@@ -2639,7 +2639,7 @@ function renderDailyChart() {
               },
 
               color:
-                "#94a3b8",
+                "#858a7d",
 
               callback: (
                 v
@@ -2765,7 +2765,7 @@ function renderMonthlyChart(
             label: "Omzet",
             data: rev,
             backgroundColor:
-              "#2563eb",
+              "#3e806b",
             borderRadius: 6,
             maxBarThickness: 34
           },
@@ -2773,7 +2773,7 @@ function renderMonthlyChart(
             label: "Laba",
             data: prof,
             backgroundColor:
-              "#93c5fd",
+              "#9bb751",
             borderRadius: 6,
             maxBarThickness: 34
           }
@@ -2814,7 +2814,7 @@ function renderMonthlyChart(
               },
 
               color:
-                "#94a3b8"
+                "#858a7d"
             }
           },
 
@@ -2823,7 +2823,7 @@ function renderMonthlyChart(
 
             grid: {
               color:
-                "#eef2f7"
+                "#e5e7df"
             },
 
             ticks: {
@@ -2832,7 +2832,7 @@ function renderMonthlyChart(
               },
 
               color:
-                "#94a3b8",
+                "#858a7d",
 
               callback: (
                 v

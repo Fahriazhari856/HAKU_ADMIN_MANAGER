@@ -6,11 +6,12 @@
   <meta name="theme-color" content="#20251f" />
   <title>Studio Desk — Freelance Manager</title>
   <link rel="stylesheet" href="freelance.css" />
+  <link rel="stylesheet" href="branding.css" />
 </head>
-<body>
+<body data-brand-app="studio">
   <div class="freelance-shell">
     <aside class="studio-sidebar">
-      <a class="studio-brand" href="./" aria-label="Kembali ke pilihan aplikasi"><span class="brand-mark">S</span><span><strong>studio desk</strong><small>Freelance manager</small></span></a>
+      <a class="studio-brand" href="./" aria-label="Kembali ke pilihan aplikasi"><span class="brand-mark" data-brand-logo="studio">S</span><span><strong>studio desk</strong><small>Freelance manager</small></span></a>
       <nav class="studio-nav" aria-label="Navigasi utama">
         <button class="studio-nav-item active" data-page="overview"><span>01</span>Ringkasan</button>
         <button class="studio-nav-item" data-page="clients"><span>02</span>Projek</button>
@@ -120,6 +121,7 @@
   <dialog class="form-dialog" id="todoDialog"><form id="todoForm"><div class="dialog-heading"><div><span class="eyebrow">DAFTAR KERJA</span><h2 id="todoDialogTitle">To-do baru</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div><input type="hidden" id="todoId" /><label class="form-field">Judul tugas<input id="todoTitle" required maxlength="160" placeholder="Contoh: Revisi landing page" /></label><div class="form-row"><label class="form-field">Projek<select id="todoClient"><option value="">Tanpa projek</option></select></label></div><div class="form-row"><label class="form-field">Deadline<input id="todoDueDate" type="date" required /></label><label class="form-field">Prioritas<select id="todoPriority"><option value="normal">Normal</option><option value="high">Tinggi</option></select></label></div><div class="form-row"><label class="form-field">Status<select id="todoStatus"><option value="open">Belum selesai</option><option value="done">Selesai</option></select></label><label class="form-field">Catatan<input id="todoNote" maxlength="240" placeholder="Catatan singkat (opsional)" /></label></div><div class="dialog-actions"><button type="button" class="quiet-button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan To-do</button></div></form></dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="branding.js"></script>
   <script src="freelance.js"></script>
 </body>
 </html>
