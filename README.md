@@ -29,8 +29,8 @@ Halaman Pemasukan menggabungkan invoice per client atau seluruh projek, pelunasa
 
 Catatan keamanan: aplikasi ini belum memakai login. Policy anon membolehkan pengunjung yang memiliki URL dan publishable key membaca serta mengubah dua baris aplikasi tersebut. Jangan masukkan data klien sensitif atau publikasikan aplikasi sebelum menambahkan Supabase Auth dan policy berbasis akun.
 
-## Logo Workspace dan aplikasi
+## Nama dan logo Workspace serta aplikasi
 
-Di halaman awal Workspace, buka **Pengaturan** untuk mengubah logo Workspace, HAKU, dan Studio Desk. Pilih inisial bawaan atau unggah PNG/JPG/WebP (maksimal 5 MB); gambar diperkecil otomatis. Pilihan latar dan bentuk logo berlaku untuk ketiga aplikasi. Logo tampil pada pemilih aplikasi, sidebar, dan favicon tab browser.
+Di halaman awal Workspace, buka **Pengaturan** untuk mengubah nama dan logo Workspace, HAKU, dan Studio Desk. Nama setiap aplikasi dapat diatur secara terpisah (maksimal 60 karakter) dan tampil pada pilihan aplikasi, tombol buka, sidebar, serta judul tab browser. Pilih inisial bawaan atau unggah PNG/JPG/WebP (maksimal 5 MB); gambar diperkecil otomatis. Pilihan latar dan bentuk logo berlaku untuk ketiga aplikasi. Logo tampil pada pemilih aplikasi, sidebar, dan favicon tab browser.
 
-Jalankan `supabase-workspace-branding.sql` di Supabase SQL Editor untuk menambahkan baris `workspace_main` beserta policy sinkronisasi. Query tidak menimpa logo yang sudah tersimpan atau data HAKU/Studio Desk. Pengaturan tetap disimpan lokal bila sinkronisasi belum tersedia. Ikon instalasi PWA menggunakan aset ikon statis pada manifest.
+Jalankan `supabase-workspace-branding.sql` di Supabase SQL Editor untuk menambahkan baris `workspace_main` beserta policy sinkronisasi. Query tidak menimpa nama atau logo yang sudah tersimpan atau data HAKU/Studio Desk. Pengaturan tetap disimpan lokal bila sinkronisasi belum tersedia. Ikon instalasi PWA menggunakan aset ikon statis pada manifest.

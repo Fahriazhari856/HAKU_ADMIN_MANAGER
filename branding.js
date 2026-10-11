@@ -1,11 +1,12 @@
 (() => {
   const KEY = "haku_workspace_branding_v1";
   const ROW = "workspace_main";
-  const defaults = () => ({ logos: { workspace: { mode: "initial", initial: "H", image: "" }, haku: { mode: "initial", initial: "H", image: "" }, studio: { mode: "initial", initial: "S", image: "" } }, appearance: { background: "default", shape: "rounded" } });
+  const defaults = () => ({ names: { workspace: "HAKU Workspace", haku: "HAKU", studio: "Studio Desk" }, logos: { workspace: { mode: "initial", initial: "H", image: "" }, haku: { mode: "initial", initial: "H", image: "" }, studio: { mode: "initial", initial: "S", image: "" } }, appearance: { background: "default", shape: "rounded" } });
   const isImage = (value) => typeof value === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 1500000;
   function normalize(raw = {}) {
     const result = defaults();
     for (const key of Object.keys(result.logos)) {
+      result.names[key] = typeof raw.names?.[key] === "string" ? raw.names[key].trim().slice(0, 60) || result.names[key] : result.names[key];
       const source = raw.logos?.[key] || {};
       result.logos[key] = { mode: source.mode === "image" && isImage(source.image) ? "image" : "initial", initial: String(source.initial || result.logos[key].initial).trim().slice(0, 3) || result.logos[key].initial, image: isImage(source.image) ? source.image : "" };
     }
@@ -39,6 +40,18 @@
   }
   function apply() {
     document.querySelectorAll("[data-brand-logo]").forEach((element) => logoElement(element, element.dataset.brandLogo));
+    document.querySelectorAll("[data-brand-name]").forEach((element) => {
+      element.textContent = settings.names[element.dataset.brandName];
+    });
+    document.querySelectorAll("[data-brand-logo]").forEach((element) => {
+      element.setAttribute("aria-label", `Logo ${settings.names[element.dataset.brandLogo]}`);
+    });
+    const app = document.body.dataset.brandApp || "workspace";
+    document.title = `${settings.names[app]} — ${app === "workspace" ? "Pilih Aplikasi" : app === "haku" ? "Manajemen Usaha Minuman" : "Freelance Manager"}`;
+    const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    if (appleTitle) appleTitle.content = settings.names[app];
+    const home = document.querySelector(".launcher-brand");
+    if (home) home.setAttribute("aria-label", settings.names.workspace);
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement("link"); icon.rel = "icon"; document.head.append(icon); }
     const key = document.body.dataset.brandApp || "workspace";
@@ -67,6 +80,7 @@
   function openSettings() {
     draft = normalize(settings); editVersion++; lastUpload = {};
     for (const key of Object.keys(draft.logos)) {
+      document.getElementById(`brandingName_${key}`).value = draft.names[key];
       document.getElementById(`brandingMode_${key}`).value = draft.logos[key].mode;
       document.getElementById(`brandingInitial_${key}`).value = draft.logos[key].initial;
       document.getElementById(`brandingUpload_${key}`).value = "";
@@ -116,6 +130,7 @@
     document.getElementById("openBrandingBtn").addEventListener("click", openSettings);
     document.getElementById("brandingDialog").addEventListener("close", () => { editVersion++; });
     for (const key of Object.keys(settings.logos)) {
+      document.getElementById(`brandingName_${key}`).addEventListener("input", (event) => { draft.names[key] = event.target.value; });
       document.getElementById(`brandingMode_${key}`).addEventListener("change", (event) => { draft.logos[key].mode = event.target.value; preview(); });
       document.getElementById(`brandingInitial_${key}`).addEventListener("input", (event) => { draft.logos[key].initial = event.target.value.trim().slice(0,3) || defaults().logos[key].initial; preview(); });
       document.getElementById(`brandingUpload_${key}`).addEventListener("change", async (event) => {
@@ -132,27 +147,29 @@
     document.getElementById("resetBrandingBtn").addEventListener("click", () => { settingsDraftReset(); });
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (busy) return;
+      if (Object.values(draft.names).some((name) => !name.trim())) { message("Isi nama Workspace dan masing-masing aplikasi."); return; }
       if (Object.values(draft.logos).some((logo) => logo.mode === "image" && !isImage(logo.image))) { message("Unggah gambar untuk setiap logo yang memakai mode gambar."); return; }
       const next = normalize(draft); next._savedAt = new Date().toISOString();
       try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { message("Penyimpanan browser penuh. Coba gunakan gambar yang lebih kecil."); return; }
       settings = next; apply();
       document.getElementById("saveBrandingBtn").disabled = true;
-      message("Logo tersimpan di perangkat ini. Menyinkronkan...");
+      message("Nama dan logo tersimpan di perangkat ini. Menyinkronkan...");
       const saved = await saveRemote(next).catch(() => false);
       document.getElementById("saveBrandingBtn").disabled = false;
-      message(saved ? "Logo tersimpan dan tersinkron ke Supabase." : "Logo tersimpan di perangkat ini. Sinkronisasi belum berhasil; pengaturan akan dicoba kembali saat halaman dibuka.");
+      message(saved ? "Nama dan logo tersimpan dan tersinkron ke Supabase." : "Nama dan logo tersimpan di perangkat ini. Sinkronisasi belum berhasil; pengaturan akan dicoba kembali saat halaman dibuka.");
     });
   }
   function settingsDraftReset() {
     draft = defaults(); editVersion++; lastUpload = {};
     for (const key of Object.keys(draft.logos)) {
+      document.getElementById(`brandingName_${key}`).value = draft.names[key];
       document.getElementById(`brandingMode_${key}`).value = "initial";
       document.getElementById(`brandingInitial_${key}`).value = draft.logos[key].initial;
       document.getElementById(`brandingUpload_${key}`).value = "";
     }
     document.getElementById("brandingBackground").value = "default";
     document.getElementById("brandingShape").value = "rounded";
-    preview(); message("Logo bawaan dipilih. Klik Simpan untuk menerapkan.");
+    preview(); message("Nama dan logo bawaan dipilih. Klik Simpan untuk menerapkan.");
   }
   window.WorkspaceBranding = { apply, sync };
   apply(); bindSettings(); sync();

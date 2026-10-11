@@ -1,4 +1,4 @@
-const CACHE_NAME = "drinkstock-shell-v4";
+const CACHE_NAME = "drinkstock-shell-v5";
 const APP_SHELL = ["./", "./index.html", "./style.css", "./launcher.css", "./launcher.js", "./branding.css", "./branding.js", "./script.js", "./freelance.html", "./freelance.css", "./freelance.js", "./manifest.webmanifest", "./icon.svg", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {

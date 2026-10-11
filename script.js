@@ -779,6 +779,7 @@ function renderBrand() {
 
   document.title =
     `${name} — Manajemen Usaha Minuman`;
+  window.WorkspaceBranding?.apply();
 }
 
 /* =========================

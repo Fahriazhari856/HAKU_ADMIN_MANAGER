@@ -21,7 +21,7 @@
     window.WorkspaceBranding?.apply();
     launcher.hidden = true;
     hakuApp.hidden = false;
-    document.getElementById("storageStatusTitle").textContent = "Menyiapkan HAKU";
+    document.getElementById("storageStatusTitle").textContent = `Menyiapkan ${document.getElementById("brandNameSide").textContent}`;
     document.getElementById("storageStatusDetail").textContent = "Memuat modul usaha...";
 
     try {
