@@ -1,5 +1,5 @@
-const CACHE_NAME = "drinkstock-shell-v2";
-const APP_SHELL = ["./", "./index.html", "./style.css", "./script.js", "./manifest.webmanifest", "./icon.svg", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
+const CACHE_NAME = "drinkstock-shell-v3";
+const APP_SHELL = ["./", "./index.html", "./style.css", "./launcher.css", "./launcher.js", "./script.js", "./freelance.html", "./freelance.css", "./freelance.js", "./manifest.webmanifest", "./icon.svg", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -26,7 +26,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(indexUrl, response.clone()));
+          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
           return response;
         })
         .catch(async () => (await caches.match(request)) || (await caches.match(indexUrl)))

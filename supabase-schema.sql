@@ -14,20 +14,20 @@ create policy "app_state_select_public"
 on public.app_state
 for select
 to anon
-using (id = 'drinkstock_main');
+using (id in ('drinkstock_main', 'freelance_main'));
 
 create policy "app_state_insert_public"
 on public.app_state
 for insert
 to anon
-with check (id = 'drinkstock_main');
+with check (id in ('drinkstock_main', 'freelance_main'));
 
 create policy "app_state_update_public"
 on public.app_state
 for update
 to anon
-using (id = 'drinkstock_main')
-with check (id = 'drinkstock_main');
+using (id in ('drinkstock_main', 'freelance_main'))
+with check (id in ('drinkstock_main', 'freelance_main'));
 
 insert into public.app_state (id, data)
 values (
@@ -42,6 +42,19 @@ values (
     "orders": [],
     "cart": [],
     "capitalEntries": []
+  }'::jsonb
+)
+on conflict (id) do nothing;
+
+insert into public.app_state (id, data)
+values (
+  'freelance_main',
+  '{
+    "clients": [],
+    "payments": [],
+    "teamPayments": [],
+    "todos": [],
+    "invoices": []
   }'::jsonb
 )
 on conflict (id) do nothing;

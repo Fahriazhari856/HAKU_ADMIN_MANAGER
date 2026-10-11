@@ -3,19 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2563eb" />
+  <meta name="theme-color" content="#20251f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="DrinkStock" />
-  <title>DrinkStock — Manajemen Usaha Minuman</title>
+  <meta name="apple-mobile-web-app-title" content="HAKU Workspace" />
+  <title>HAKU Workspace — Pilih Aplikasi</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./icon-180.png" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="launcher.css" />
 </head>
 <body>
-  <div class="app-shell">
+  <main class="launcher-screen" id="appLauncher">
+    <header class="launcher-topbar">
+      <a class="launcher-brand" href="./" aria-label="HAKU Workspace"><span class="launcher-mark">H</span><span><strong>HAKU</strong><small>WORKSPACE</small></span></a>
+      <span class="launcher-caption">SATU RUANG KERJA <i></i> DUA SISTEM</span>
+    </header>
+    <section class="launcher-intro">
+      <div><span class="launcher-eyebrow">PILIH RUANG KERJA</span><h1>Semua kerja,<br /><em>punya tempatnya.</em></h1></div>
+      <p>Kelola usaha minuman atau pekerjaan freelance dari workspace yang sama.</p>
+    </section>
+    <section class="launcher-apps" aria-label="Daftar aplikasi">
+      <article class="launcher-app launcher-haku">
+        <div class="launcher-app-meta"><span>01 / USAHA MINUMAN</span><span class="app-symbol">H</span></div>
+        <div><h2>HAKU</h2><p>Stok, penjualan, pesanan, modal usaha, dan laporan.</p></div>
+        <button class="launcher-open" id="openHakuBtn" type="button">Buka HAKU <span aria-hidden="true">↗</span></button>
+      </article>
+      <article class="launcher-app launcher-freelance">
+        <div class="launcher-app-meta"><span>02 / KERJA KREATIF</span><span class="app-symbol">S</span></div>
+        <div><h2>Studio Desk</h2><p>Klien, proyek desain dan prototype, pembayaran, serta penghasilan tim.</p></div>
+        <a class="launcher-open" href="./freelance.html">Buka Freelance Manager <span aria-hidden="true">↗</span></a>
+      </article>
+    </section>
+    <footer class="launcher-footer"><span>HAKU WORKSPACE</span><span>Satu database Supabase · Data tiap aplikasi terpisah</span></footer>
+  </main>
+
+  <div class="app-shell" id="hakuApp" hidden>
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <img class="brand-logo" src="./icon.svg" alt="Haku" />
@@ -55,6 +80,7 @@
           <p id="pageSubtitle">Ringkasan usaha hari ini.</p>
         </div>
         <div class="topbar-actions">
+          <a class="switch-app-btn" href="./" aria-label="Kembali ke pilihan aplikasi"><span aria-hidden="true">←</span> Aplikasi</a>
           <button class="secondary-btn install-app-btn" id="installAppBtn" type="button" hidden><span aria-hidden="true">↓</span> Install App</button>
           <div class="today-chip" id="todayChip"></div>
         </div>
@@ -742,11 +768,6 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js"></script>
+  <script src="launcher.js"></script>
 </body>
 </html>

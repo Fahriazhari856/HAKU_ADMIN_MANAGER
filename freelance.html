@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#20251f" />
+  <title>Studio Desk — Freelance Manager</title>
+  <link rel="stylesheet" href="freelance.css" />
+</head>
+<body>
+  <div class="freelance-shell">
+    <aside class="studio-sidebar">
+      <a class="studio-brand" href="./" aria-label="Kembali ke pilihan aplikasi"><span class="brand-mark">S</span><span><strong>studio desk</strong><small>Freelance manager</small></span></a>
+      <nav class="studio-nav" aria-label="Navigasi utama">
+        <button class="studio-nav-item active" data-page="overview"><span>01</span>Ringkasan</button>
+        <button class="studio-nav-item" data-page="clients"><span>02</span>Projek</button>
+        <button class="studio-nav-item" data-page="todos"><span>03</span>To-do & deadline</button>
+        <button class="studio-nav-item" data-page="income"><span>04</span>Pemasukan</button>
+        <button class="studio-nav-item" data-page="settings"><span>05</span>Pengaturan</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="sync-dot" id="connectionState">Menghubungkan database...</span><small>Data lokal + Supabase</small></div>
+    </aside>
+
+    <main class="studio-main">
+      <header class="studio-topbar">
+        <div><span class="eyebrow">RUANG KERJA FREELANCE</span><h1 id="pageTitle">Ringkasan</h1></div>
+        <div class="top-actions"><a class="quiet-button" href="./">← Ganti aplikasi</a><button class="accent-button" id="addClientTopBtn">+ Projek baru</button></div>
+      </header>
+
+      <section class="view-section" data-view="overview">
+        <div class="overview-heading"><div><span class="eyebrow">PANTAU PEKERJAAN & ARUS KAS</span><h2>Kerja rapi,<br /><em>angka jelas.</em></h2></div><div class="overview-aside"><span class="live-mark"></span><span id="monthLabel"></span><small>Perhitungan dari pembayaran yang sudah dicatat.</small></div></div>
+        <div class="metric-grid">
+          <article class="metric-card metric-week"><span class="metric-label">MASUK MINGGU INI</span><strong id="metricWeek">Rp0</strong><small>Dari pembayaran projek</small></article>
+          <article class="metric-card metric-month"><span class="metric-label">MASUK BULAN INI</span><strong id="metricMonth">Rp0</strong><small>Pembayaran projek diterima</small></article>
+          <article class="metric-card metric-net"><span class="metric-label">BERSIH BULAN INI</span><strong id="metricNet">Rp0</strong><small id="monthCaption">Setelah pembayaran tim</small></article>
+          <article class="metric-card metric-due"><span class="metric-label">TAGIHAN TERSISA</span><strong id="metricOutstanding">Rp0</strong><small>Nilai client dikurangi pembayaran</small></article>
+        </div>
+        <div class="overview-grid">
+          <article class="work-panel"><div class="panel-heading"><div><span class="eyebrow">URUTAN OTOMATIS · TERDEKAT DI ATAS</span><h3>Deadline terdekat</h3></div><button class="plain-action" data-page="todos">Semua deadline →</button></div><div id="deadlinePreview" class="activity-list"></div></article>
+          <article class="work-panel"><div class="panel-heading"><div><span class="eyebrow">PEMBAYARAN TERBARU</span><h3>Uang masuk</h3></div><button class="plain-action" data-page="income">Lihat pemasukan →</button></div><div id="recentPayments" class="activity-list"></div></article>
+        </div>
+        <div class="overview-footer"><span><b id="clientCount">0</b> projek tersimpan</span><button class="plain-action" data-page="income">Kelola invoice dan pemasukan →</button></div>
+      </section>
+
+      <section class="view-section" data-view="clients" hidden>
+        <div class="section-intro"><div><span class="eyebrow">DATABASE RELASI</span><h2>Projek</h2><p>Kelompokkan client dalam projek sesuai kategori dan pantau deadline dari setiap card.</p></div><button class="accent-button" id="addClientBtn">+ Projek baru</button></div>
+        <div class="todo-toolbar"><label class="search-field"><span aria-hidden="true">⌕</span><input id="projectSearch" type="search" placeholder="Cari projek atau client" /></label><label class="toolbar-select">Kategori<select id="projectCategoryFilter"><option value="">Semua kategori</option></select></label></div>
+        <div id="projectCards" class="project-card-grid"></div>
+      </section>
+
+      <section class="view-section" data-view="todos" hidden>
+        <div class="section-intro"><div><span class="eyebrow">DAFTAR TUGAS & TENGGAT</span><h2>To-do & deadline</h2><p>Tanggal paling dekat otomatis muncul paling atas. Deadline client dalam projek ikut dipantau.</p></div><button class="accent-button" id="addTodoBtn">+ To-do baru</button></div>
+        <div class="todo-toolbar"><label class="toolbar-select">Tampilkan<select id="todoStatusFilter"><option value="open">Belum selesai</option><option value="all">Semua deadline</option><option value="done">Selesai</option></select></label><label class="toolbar-select">Urutkan<select id="deadlineSort"><option value="nearest">Terdekat dulu</option><option value="furthest">Terdekat belakangan</option></select></label></div>
+        <div class="data-table-wrap"><table><thead><tr><th>Deadline</th><th>To-do / projek / client</th><th>Kategori</th><th>Projek</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="todoRows"></tbody></table></div>
+      </section>
+
+      <section class="view-section" data-view="income" hidden>
+        <div class="section-intro"><div><span class="eyebrow">UANG DITERIMA DARI KLIEN</span><h2>Pemasukan</h2><p>Total berdasarkan transfer yang sudah dicatat.</p></div><div class="income-actions"><div class="period-switch" role="group" aria-label="Filter periode pemasukan"><button class="active" type="button" data-income-period="week" aria-pressed="true">Minggu ini</button><button type="button" data-income-period="month" aria-pressed="false">Bulan ini</button></div><button class="accent-button" id="addInvoiceBtn">+ Invoice baru</button></div></div>
+        <div class="income-card-grid"><article class="income-total-panel"><div><span class="eyebrow">TOTAL PEMASUKAN</span><strong id="incomeTotal">Rp0</strong><p id="incomeCaption">Belum ada pembayaran projek di periode ini.</p></div><div class="income-period-mark"><span id="incomeRange"></span><small><b id="incomePaymentCount">0</b> transfer diterima</small></div></article>
+        <article class="income-total-panel income-prediction-panel"><div><span class="eyebrow">PREDIKSI PEMASUKAN</span><strong id="incomePrediction">Rp0</strong><p id="incomePredictionCaption"></p></div><small>Seluruh sisa kesepakatan client aktif dan selesai yang belum lunas. Client dibatalkan tidak dihitung.</small></article></div>
+        <div class="income-ledger-heading"><div><span class="eyebrow">TAGIHAN CLIENT & PROJEK</span><h3>Invoice</h3></div></div>
+        <div class="data-table-wrap"><table><thead><tr><th>Invoice</th><th>Projek / client</th><th>Jatuh tempo</th><th>Nilai</th><th>Sisa</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="invoiceRows"></tbody></table></div>
+        <div class="income-ledger-heading"><div><span class="eyebrow">RINCIAN TRANSFER</span><h3>Pembayaran projek</h3></div><span id="incomeLedgerRange"></span></div>
+        <div class="data-table-wrap"><table><thead><tr><th>Tanggal</th><th>Projek</th><th>Client</th><th>Metode</th><th>Nominal masuk</th><th>Aksi</th></tr></thead><tbody id="incomeRows"></tbody></table></div>
+        <div class="income-ledger-heading"><div><span class="eyebrow">HONOR TIM</span><h3>Pengeluaran tim</h3></div><button class="quiet-button" id="addTeamPaymentBtn">− Bayar tim</button></div>
+        <div class="data-table-wrap"><table><thead><tr><th>Tanggal</th><th>Projek / client</th><th>Anggota tim</th><th>Metode</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody id="teamIncomeRows"></tbody></table></div>
+      </section>
+
+      <section class="view-section" data-view="settings" hidden>
+        <div class="section-intro"><div><span class="eyebrow">PREFERENSI FORMULIR</span><h2>Pengaturan</h2><p>Kelola kategori projek dan client, metode pembayaran, serta status client.</p></div></div>
+        <form id="settingsForm" class="work-panel settings-panel">
+          <label class="form-field">Kategori projek<textarea id="settingsProjectCategories" rows="5" required></textarea><small>Satu pilihan per baris untuk pengelompokan card projek.</small></label>
+          <label class="form-field">Kategori client<textarea id="settingsCategories" rows="6" required></textarea><small>Satu pilihan per baris.</small></label>
+          <label class="form-field">Metode pembayaran<textarea id="settingsMethods" rows="6" required></textarea><small>Satu pilihan per baris.</small></label>
+          <label class="form-field">Status client<textarea id="settingsStatuses" rows="6" required></textarea><small>Berjalan, Selesai, dan Dibatalkan selalu tersedia. Tambahkan status lain per baris.</small></label>
+          <div class="dialog-actions"><span id="settingsMessage" role="status"></span><button class="accent-button" type="submit">Simpan pengaturan</button></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="form-dialog compact-dialog" id="clientDialog">
+    <form id="clientForm">
+      <div class="dialog-heading"><div><span class="eyebrow">KELOMPOK CLIENT</span><h2 id="clientDialogTitle">Projek baru</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div>
+      <input type="hidden" id="clientId" />
+      <label class="form-field">Nama projek<input id="clientName" required maxlength="120" placeholder="Contoh: Website / desain brand" /></label>
+      <label class="form-field">Kategori projek<select id="clientCategory" required></select></label>
+      <label class="form-field">Deadline projek<input id="clientDeadline" type="date" /><small>Deadline projek dan client aktif akan ditandai pada card.</small></label>
+      <div class="dialog-actions"><button type="button" class="quiet-button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan projek</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog" id="workDialog">
+    <form id="workForm">
+      <div class="dialog-heading"><div><span class="eyebrow" id="workProjectCaption"></span><h2 id="workDialogTitle">Client baru</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div>
+      <input type="hidden" id="workParentId" /><input type="hidden" id="workId" />
+      <label class="form-field">Nama client<input id="workName" required maxlength="160" placeholder="Nama client / brand" /></label>
+      <div class="form-row"><label class="form-field">Kategori client<select id="workCategory" required></select></label><label class="form-field">Nilai kesepakatan (Rp)<input id="workPrice" type="number" min="0" step="1" required placeholder="0" /></label></div>
+      <div class="form-row"><label class="form-field">Deadline<input id="workDeadline" type="date" /></label><label class="form-field">Status<select id="workStatus" required></select></label></div>
+      <label class="form-field">Tim client (opsional)<input id="workTeam" maxlength="240" placeholder="Nama anggota, pisahkan dengan koma" /></label>
+      <label class="form-field">Referensi atau catatan (opsional)<textarea id="workNotes" rows="4" maxlength="3000" placeholder="Link referensi, brief, atau catatan untuk client ini"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="quiet-button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan client</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog compact-dialog" id="paymentDialog"><form id="paymentForm"><div class="dialog-heading"><div><span class="eyebrow">CATAT ARUS KAS</span><h2 id="paymentDialogTitle">Catat pembayaran projek</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div><input type="hidden" id="paymentType" value="client" /><input type="hidden" id="paymentInvoiceId" /><p id="paymentInvoiceCaption" class="payment-note" hidden></p><div id="paymentScopeFields"><label class="form-field">Projek<select id="paymentClient" required></select></label><label class="form-field">Client<select id="paymentWork"><option value="">Pembayaran umum projek</option></select></label></div><label class="form-field" id="paymentMemberWrap" hidden>Nama anggota tim<input id="paymentMember" maxlength="120" placeholder="Nama penerima honor" /></label><div class="form-row"><label class="form-field">Nominal (Rp)<input id="paymentAmount" type="number" min="1" step="1" required placeholder="0" /></label><label class="form-field">Tanggal<input id="paymentDate" type="date" required /></label></div><label class="form-field">Metode pembayaran<select id="paymentMethod"><option value="Transfer bank (TF)">Transfer bank (TF)</option><option value="QRIS">QRIS</option><option value="Tunai (Cash)">Tunai (Cash)</option><option value="E-Wallet">E-Wallet</option><option value="Lainnya">Lainnya</option></select></label><label class="form-field" id="paymentMethodOtherWrap" hidden>Metode lainnya<input id="paymentMethodOther" maxlength="80" placeholder="Contoh: PayPal" /></label><div class="dialog-actions"><button type="button" class="quiet-button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan pembayaran</button></div></form></dialog>
+
+  <dialog class="form-dialog" id="invoiceDialog"><form id="invoiceForm">
+    <div class="dialog-heading"><div><span class="eyebrow">TAGIHAN</span><h2>Invoice baru</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div>
+    <label class="form-field">Projek<select id="invoiceProject" required></select></label>
+    <label class="form-field">Client<select id="invoiceWork"><option value="">Seluruh projek</option></select><small>Pilih client tertentu atau buat invoice untuk seluruh projek.</small></label>
+    <div class="form-row"><label class="form-field">Tanggal invoice<input id="invoiceDate" type="date" required /></label><label class="form-field">Jatuh tempo<input id="invoiceDue" type="date" required /></label></div>
+    <label class="form-field">Nilai invoice (Rp)<input id="invoiceAmount" type="number" min="1" step="1" required /><small id="invoiceAvailable"></small></label>
+    <label class="form-field">Keterangan<textarea id="invoiceNotes" rows="3" maxlength="3000" placeholder="Detail tagihan atau catatan"></textarea></label>
+    <p id="invoiceMessage" role="status"></p>
+    <div class="dialog-actions"><button class="quiet-button" type="button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan invoice</button></div>
+  </form></dialog>
+  <section id="invoicePrint" class="invoice-print" aria-label="Invoice untuk dicetak"></section>
+
+  <dialog class="form-dialog" id="todoDialog"><form id="todoForm"><div class="dialog-heading"><div><span class="eyebrow">DAFTAR KERJA</span><h2 id="todoDialogTitle">To-do baru</h2></div><button class="dialog-close" type="button" aria-label="Tutup" onclick="this.closest('dialog').close()">×</button></div><input type="hidden" id="todoId" /><label class="form-field">Judul tugas<input id="todoTitle" required maxlength="160" placeholder="Contoh: Revisi landing page" /></label><div class="form-row"><label class="form-field">Projek<select id="todoClient"><option value="">Tanpa projek</option></select></label></div><div class="form-row"><label class="form-field">Deadline<input id="todoDueDate" type="date" required /></label><label class="form-field">Prioritas<select id="todoPriority"><option value="normal">Normal</option><option value="high">Tinggi</option></select></label></div><div class="form-row"><label class="form-field">Status<select id="todoStatus"><option value="open">Belum selesai</option><option value="done">Selesai</option></select></label><label class="form-field">Catatan<input id="todoNote" maxlength="240" placeholder="Catatan singkat (opsional)" /></label></div><div class="dialog-actions"><button type="button" class="quiet-button" onclick="this.closest('dialog').close()">Batal</button><button class="accent-button" type="submit">Simpan To-do</button></div></form></dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="freelance.js"></script>
+</body>
+</html>

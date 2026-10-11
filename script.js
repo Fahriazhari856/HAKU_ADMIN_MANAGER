@@ -4857,11 +4857,14 @@ function downloadBlob(
    START APP
 ========================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    setupEvents();
-    renderAll();
-    initSupabaseSync();
-  }
-);
+function startHaku() {
+  setupEvents();
+  renderAll();
+  initSupabaseSync();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startHaku, { once: true });
+} else {
+  startHaku();
+}

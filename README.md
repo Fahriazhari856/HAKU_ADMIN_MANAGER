@@ -1,4 +1,6 @@
-# HAKU_ADMIN_MANAGER
+# HAKU Workspace
+
+Home workspace menyediakan dua aplikasi: HAKU untuk usaha minuman dan Studio Desk untuk manajemen pekerjaan freelance. Keduanya memakai proyek Supabase yang sama, tetapi menyimpan data di baris `app_state` yang berbeda agar data usaha tidak tercampur.
 
 ## Install DrinkStock
 
@@ -14,9 +16,15 @@ Pada browser yang mendukung pemasangan langsung, tombol Install App akan muncul 
 
 1. Buka dashboard Supabase project.
 2. Masuk ke SQL Editor.
-3. Jalankan isi file `supabase-schema.sql` satu kali.
+3. Jalankan isi file `supabase-schema.sql`. Jika HAKU sudah pernah disiapkan, jalankan ulang file ini untuk memperbarui policy dan menambahkan baris Studio Desk; data HAKU yang sudah ada tidak ditimpa.
 4. Buka aplikasi melalui hosting HTTPS atau jalankan server lokal, bukan dengan membuka file HTML langsung.
 
-Aplikasi akan memakai Supabase sebagai database utama dan tetap menyimpan cadangan data di browser.
+Aplikasi akan memakai Supabase sebagai database utama dan tetap menyimpan cadangan data di browser. Data projek beserta client, To-do, invoice, pelunasan, pengeluaran tim, dan pengaturan tersimpan pada `app_state.id = 'freelance_main'`; data HAKU tetap di `app_state.id = 'drinkstock_main'`. Data kedua sistem berada di database yang sama, tetapi tidak digabung menjadi transaksi stok HAKU.
 
-Catatan: versi ini belum memakai login, jadi policy Supabase dibuat agar publishable key bisa membaca dan menyimpan satu baris data aplikasi. Untuk penggunaan multi-user yang lebih aman, tambahkan Supabase Auth dan policy per akun.
+## Studio Desk
+
+Buat card projek dengan nama, kategori, dan deadline, lalu tambahkan beberapa client di dalamnya. Setiap client memiliki kategori, nilai kesepakatan, deadline, status, tim opsional, serta referensi atau catatan. Pengaturan menyediakan kategori projek dan client secara terpisah.
+
+Halaman Pemasukan menggabungkan invoice per client atau seluruh projek, pelunasan sebagian/penuh, cetak invoice, riwayat pemasukan, dan pengeluaran tim. Total Pemasukan memakai filter minggu berjalan (Senin sampai hari ini) atau bulan berjalan. Prediksi Pemasukan menghitung seluruh sisa kesepakatan yang belum lunas, termasuk client yang belum selesai; client dibatalkan tidak dihitung. Invoice baru tidak dihitung sebagai uang diterima sampai pelunasannya dicatat.
+
+Catatan keamanan: aplikasi ini belum memakai login. Policy anon membolehkan pengunjung yang memiliki URL dan publishable key membaca serta mengubah dua baris aplikasi tersebut. Jangan masukkan data klien sensitif atau publikasikan aplikasi sebelum menambahkan Supabase Auth dan policy berbasis akun.
